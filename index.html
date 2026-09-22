@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+<html lang='zh-CN'>
+<head>
+<meta charset='UTF-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0'>
+<title>单链表基本操作 · 逐函数交互课堂</title>
+<style>
+:root{
+  --bg:#eef2f7; --paper:#ffffff; --ink:#14213d; --muted:#667085; --line:#d7deea;
+  --primary:#2563eb; --primary-soft:#dbeafe; --indigo:#4f46e5; --cyan:#0891b2;
+  --green:#15803d; --green-soft:#dcfce7; --amber:#b45309; --amber-soft:#fef3c7;
+  --red:#b91c1c; --red-soft:#fee2e2; --violet:#7c3aed; --violet-soft:#ede9fe;
+  --code:#0e1726; --code-line:#1e293b; --shadow:0 14px 40px rgba(20,33,61,.10);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);line-height:1.65;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Microsoft YaHei',sans-serif}
+button,input,textarea,select{font:inherit}
+button{cursor:pointer}
+a{color:inherit}
+.topbar{position:sticky;top:0;z-index:80;height:64px;display:flex;align-items:center;gap:18px;padding:0 22px;color:#fff;background:#0f172a;box-shadow:0 6px 24px rgba(15,23,42,.22)}
+.brand{display:flex;align-items:center;gap:10px;min-width:250px}
+.brand-mark{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;background:linear-gradient(135deg,#60a5fa,#a78bfa);font-weight:800}
+.brand b{display:block;font-size:15px;letter-spacing:.2px}
+.brand small{display:block;color:#aab6cc;font-size:11px;line-height:1.2}
+.top-progress{height:7px;flex:1;background:#243047;border-radius:999px;overflow:hidden}
+.top-progress span{display:block;height:100%;width:7%;background:linear-gradient(90deg,#22d3ee,#60a5fa,#a78bfa);transition:width .25s}
+.top-actions{display:flex;align-items:center;gap:8px}
+.mode-btn{border:1px solid #475569;background:#172033;color:#e5edf8;border-radius:9px;padding:7px 12px;font-size:13px;font-weight:700}
+.mode-btn:hover{border-color:#93c5fd;color:#fff}
+.mode-btn.active{background:#2563eb;border-color:#60a5fa}
+.shell{display:grid;grid-template-columns:270px minmax(0,1fr);min-height:calc(100vh - 64px)}
+.sidebar{position:sticky;top:64px;height:calc(100vh - 64px);overflow:auto;background:#fff;border-right:1px solid var(--line);padding:20px 14px 32px}
+.side-summary{border:1px solid #bfdbfe;background:linear-gradient(135deg,#eff6ff,#f5f3ff);border-radius:14px;padding:14px;margin:0 4px 16px;font-size:12px;color:#475569}
+.side-summary strong{display:block;color:#1e3a8a;font-size:14px;margin-bottom:4px}
+.side-title{font-size:11px;letter-spacing:.14em;color:#98a2b3;margin:12px 10px 8px;font-weight:800}
+.nav-list{display:grid;gap:4px}
+.nav-link{width:100%;border:0;background:transparent;text-align:left;text-decoration:none;display:grid;grid-template-columns:31px 1fr;gap:8px;align-items:center;color:#475569;padding:9px 10px;border-radius:10px;font-size:13px}
+.nav-link:hover{background:#f1f5f9;color:#1d4ed8}
+.nav-link.active{background:var(--primary-soft);color:#1d4ed8;font-weight:800}
+.nav-num{width:27px;height:27px;border-radius:8px;background:#eef2f7;display:grid;place-items:center;color:#64748b;font-size:11px;font-weight:800}
+.nav-link.active .nav-num{background:#2563eb;color:#fff}
+.side-tip{border-top:1px solid var(--line);margin-top:18px;padding:14px 10px 0;color:#667085;font-size:12px}
+kbd{background:#f1f5f9;border:1px solid #cbd5e1;border-bottom-width:2px;border-radius:5px;padding:1px 5px;font-size:11px}
+main{min-width:0;max-width:1240px;width:100%;margin:0 auto;padding:30px 34px 80px}
+.lesson-section{scroll-margin-top:82px;margin-bottom:34px}
+.panel{background:var(--paper);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);overflow:hidden}
+.hero{padding:42px;background:radial-gradient(circle at 86% 8%,rgba(96,165,250,.25),transparent 30%),linear-gradient(135deg,#0f172a,#172554 62%,#312e81);color:#fff;border:0}
+.hero-kicker{display:inline-flex;align-items:center;gap:8px;color:#bfdbfe;font-size:12px;font-weight:800;letter-spacing:.1em;text-transform:uppercase}
+.hero h1{font-size:clamp(30px,4vw,52px);line-height:1.16;margin:16px 0 14px;max-width:850px}
+.hero p{max-width:790px;color:#dbeafe;font-size:17px;margin:0}
+.hero-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:28px}
+.hero-card{border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.08);border-radius:14px;padding:14px}
+.hero-card b{display:block;color:#fff;font-size:14px;margin-bottom:3px}
+.hero-card span{color:#bfdbfe;font-size:12px}
+.section-head{padding:26px 28px 22px;border-bottom:1px solid var(--line);background:linear-gradient(135deg,#fff,#f8fbff)}
+.eyebrow{color:var(--primary);font-size:12px;font-weight:900;letter-spacing:.12em;text-transform:uppercase}
+.section-head h2{font-size:clamp(23px,2.3vw,32px);line-height:1.25;margin:5px 0 7px}
+.section-head p{margin:0;color:var(--muted);max-width:880px}
+.section-body{padding:28px}
+.grid-2{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);gap:22px}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.card{border:1px solid var(--line);border-radius:15px;padding:18px;background:#fff}
+.card.soft{background:#f8fafc}
+.card h3{margin:0 0 10px;font-size:17px}
+.card h4{margin:0 0 8px;font-size:14px;color:#344054}
+.card p{margin:7px 0}
+.tag{display:inline-flex;align-items:center;border-radius:999px;padding:3px 9px;font-size:11px;font-weight:800;margin:0 5px 5px 0}
+.tag-blue{background:var(--primary-soft);color:#1d4ed8}
+.tag-green{background:var(--green-soft);color:var(--green)}
+.tag-amber{background:var(--amber-soft);color:var(--amber)}
+.tag-red{background:var(--red-soft);color:var(--red)}
+.tag-violet{background:var(--violet-soft);color:var(--violet)}
+.callout{border-left:4px solid var(--primary);background:#eff6ff;padding:13px 15px;border-radius:0 10px 10px 0;color:#1e3a8a;margin-top:13px}
+.callout.warn{border-color:#f59e0b;background:#fffbeb;color:#78350f}
+.callout.bad{border-color:#ef4444;background:#fef2f2;color:#7f1d1d}
+.callout.good{border-color:#22c55e;background:#f0fdf4;color:#14532d}
+.code-panel{background:var(--code);border-radius:14px;overflow:hidden;color:#dbeafe;min-width:0}
+.code-head{display:flex;align-items:center;justify-content:space-between;background:#172033;padding:9px 13px;color:#94a3b8;font-size:12px}
+.dots{display:flex;gap:5px}.dots i{width:9px;height:9px;border-radius:50%;background:#475569;display:block}
+.dots i:nth-child(1){background:#ef4444}.dots i:nth-child(2){background:#f59e0b}.dots i:nth-child(3){background:#10b981}
+pre{margin:0;font-family:Consolas,Monaco,'Courier New',monospace;font-size:13px;line-height:1.78;overflow:auto}
+.code-panel pre{padding:15px 17px;white-space:pre}
+.c-kw{color:#c084fc}.c-type{color:#60a5fa}.c-fn{color:#fbbf24}.c-str{color:#86efac}.c-num{color:#fb923c}.c-com{color:#64748b}.c-pink{color:#f472b6}
+.code-lines{padding:10px 0}
+.code-line{display:grid;grid-template-columns:42px minmax(0,1fr);min-height:24px;border-left:3px solid transparent}
+.code-line .ln{text-align:right;padding-right:12px;color:#475569;user-select:none}
+.code-line .lc{white-space:pre;padding:0 14px 0 12px;border-left:1px solid #334155}
+.code-line.active{background:rgba(37,99,235,.2);border-left-color:#60a5fa}
+.code-line.active .ln{color:#93c5fd;font-weight:800}
+.mono{font-family:Consolas,Monaco,'Courier New',monospace}
+.small{font-size:12px}
+.muted{color:var(--muted)}
+ul.clean{padding-left:20px;margin:8px 0}
+ul.clean li{margin:5px 0}
+.fn-signature{font-family:Consolas,Monaco,monospace;background:#f8fafc;border:1px solid var(--line);border-radius:10px;padding:10px 12px;overflow:auto;color:#1e3a8a}
+.flow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:12px 0}
+.flow span{background:#f1f5f9;border:1px solid var(--line);border-radius:9px;padding:7px 10px;font-size:12px;font-weight:700}
+.flow i{color:#94a3b8;font-style:normal}
+.table-wrap{overflow:auto;border:1px solid var(--line);border-radius:12px}
+table{width:100%;border-collapse:collapse;font-size:13px;background:#fff}
+th,td{padding:10px 12px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{background:#f8fafc;color:#475569;font-size:12px}
+tr:last-child td{border-bottom:0}
+.node{width:122px;border:2px solid #2563eb;border-radius:13px;background:#eff6ff;overflow:hidden;box-shadow:0 6px 15px rgba(37,99,235,.12);flex:0 0 auto;position:relative}
+.node .label{font-size:10px;text-align:center;background:#2563eb;color:#fff;padding:2px 5px;font-weight:800}
+.node .middle{display:grid;grid-template-columns:1fr 1fr;min-height:55px}
+.node .data,.node .next{display:grid;place-items:center;font-family:Consolas,monospace;font-weight:800}
+.node .data{border-right:1px solid #bfdbfe}
+.node .next{background:#dbeafe;color:#1e40af;font-size:11px}
+.node.head{border-color:#7c3aed;background:#f5f3ff}
+.node.head .label{background:#7c3aed}
+.node.head .next{background:#ede9fe;color:#5b21b6}
+.node .idx{position:absolute;top:-21px;left:50%;transform:translateX(-50%);color:#667085;font-size:10px}
+.node.active{outline:4px solid rgba(245,158,11,.42);transform:translateY(-5px)}
+.node.new{border-color:#16a34a}
+.node.danger{border-color:#dc2626;background:#fef2f2}
+.list-flow{display:flex;align-items:center;gap:9px;min-height:92px;padding:30px 2px 10px;overflow:auto}
+.arrow{color:#64748b;font-size:24px;flex:0 0 auto}
+.null{font-family:Consolas,monospace;color:#dc2626;font-weight:900;border:2px dashed #fca5a5;border-radius:10px;padding:13px 15px;background:#fef2f2}
+.stage{background:#f8fafc;border:1px solid var(--line);border-radius:14px;padding:16px;min-height:220px;overflow:hidden}
+.stage-frame{display:none}
+.stage-frame.active{display:block;animation:fadeIn .25s ease}
+@keyframes fadeIn{from{opacity:.3;transform:translateY(4px)}to{opacity:1;transform:none}}
+.trace-grid{display:grid;grid-template-columns:minmax(360px,.95fr) minmax(0,1.05fr);gap:18px}
+.trace-controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:12px}
+.btn{border:1px solid #cbd5e1;background:#fff;color:#334155;border-radius:9px;padding:7px 11px;font-size:12px;font-weight:800}
+.btn:hover{background:#f8fafc;border-color:#94a3b8}
+.btn.primary{background:#2563eb;border-color:#2563eb;color:#fff}
+.btn.primary:hover{background:#1d4ed8}
+.btn.good{background:#15803d;border-color:#15803d;color:#fff}
+.btn.warn{background:#b45309;border-color:#b45309;color:#fff}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.caption-box{background:#fff;border:1px solid var(--line);border-radius:12px;padding:13px;min-height:76px;margin-top:12px}
+.step-dot{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;background:#dbeafe;color:#1d4ed8;font-size:11px;font-weight:900;margin-right:6px}
+.trace-caption{display:none}
+.trace-caption.active{display:block}
+.mini-list{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.mini-node{padding:6px 9px;border:2px solid #2563eb;border-radius:9px;background:#eff6ff;font-family:Consolas,monospace;font-weight:800}
+.mini-node.head{border-color:#7c3aed;background:#f5f3ff;color:#5b21b6}
+.mini-node.active{outline:3px solid #fbbf24;outline-offset:2px}
+.mini-node.gone{opacity:.28;text-decoration:line-through}
+.pointer-row{display:grid;gap:8px;margin-top:10px}
+.pointer-item{display:grid;grid-template-columns:72px 1fr;gap:8px;align-items:center;font-size:12px}
+.pointer-name{font-weight:900;color:#1d4ed8}
+.pointer-value{font-family:Consolas,monospace;background:#f8fafc;border:1px solid var(--line);border-radius:7px;padding:5px 8px}
+.quiz-q{border:1px solid var(--line);border-radius:13px;padding:14px;background:#fff;margin-top:12px}
+.answer-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px}
+input[type=text],input[type=number],textarea,select{border:1px solid #cbd5e1;border-radius:9px;padding:8px 10px;background:#fff;color:var(--ink);outline:none}
+input[type=text]:focus,input[type=number]:focus,textarea:focus,select:focus{border-color:#60a5fa;box-shadow:0 0 0 3px rgba(96,165,250,.18)}
+.short-input{width:150px}
+textarea{width:100%;min-height:188px;resize:vertical;font-family:Consolas,Monaco,monospace;font-size:13px;line-height:1.65}
+.result{font-size:12px;font-weight:800;margin-left:3px}
+.result.ok{color:#15803d}.result.no{color:#b91c1c}
+.task-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.task-card{border:1px solid var(--line);border-radius:15px;padding:16px;background:#fff}
+.task-card h3{margin:0 0 4px;font-size:16px}
+.task-card p{color:#667085;font-size:12px;margin:0 0 10px}
+.editor-tools{display:flex;gap:7px;flex-wrap:wrap;margin-top:9px}
+details{border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:#f8fafc;margin-top:10px}
+summary{cursor:pointer;font-weight:800;color:#334155}
+.lab-layout{display:grid;grid-template-columns:330px minmax(0,1fr);gap:18px}
+.control-grid{display:grid;gap:10px}
+.field{display:grid;gap:4px}
+.field label{font-size:12px;font-weight:800;color:#475569}
+.field input,.field select{width:100%}
+.control-row{display:flex;gap:7px;flex-wrap:wrap}
+.lab-list{background:#0f172a;border-radius:15px;padding:18px;min-height:210px;color:#cbd5e1;overflow:hidden}
+.lab-list .node{background:#f8fafc}.lab-list .node .data{color:#0f172a}
+.log{height:150px;overflow:auto;background:#f8fafc;border:1px solid var(--line);border-radius:12px;padding:10px;font:12px/1.6 Consolas,monospace;margin-top:12px}
+.log-line{padding:2px 0;border-bottom:1px dashed #e2e8f0}.log-line:last-child{border:0}
+.log-line.ok{color:#15803d}.log-line.bad{color:#b91c1c}.log-line.info{color:#1d4ed8}
+.mistake{display:grid;grid-template-columns:auto 1fr;gap:10px;border:1px solid var(--line);border-radius:12px;padding:12px;margin-top:9px;background:#fff}
+.mistake b{color:#b91c1c}
+.pager{display:flex;justify-content:space-between;gap:10px;margin-top:18px;padding-top:16px;border-top:1px solid var(--line)}
+.pager button:last-child{text-align:right}
+.checklist{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.check-item{border:1px solid var(--line);border-radius:12px;padding:13px;background:#f8fafc}
+.check-item strong{display:block;color:#1d4ed8;margin-bottom:3px}
+body.present .lesson-section{display:none;margin-bottom:0}
+body.present .lesson-section.is-active{display:block;animation:fadeIn .25s ease}
+body.present main{padding-top:24px}
+body.present .sidebar{display:none}
+body.present .shell{grid-template-columns:1fr}
+body.present .panel{min-height:calc(100vh - 112px)}
+.footer-note{text-align:center;color:#98a2b3;font-size:11px;margin-top:22px}
+@media (max-width:1050px){.grid-2,.trace-grid,.lab-layout{grid-template-columns:1fr}.task-grid{grid-template-columns:1fr}.sidebar{position:static;height:auto;border-right:0;border-bottom:1px solid var(--line)}.shell{grid-template-columns:1fr}.nav-list{grid-template-columns:repeat(2,1fr)}.topbar{height:auto;padding:10px 14px;flex-wrap:wrap}.brand{min-width:0;flex:1}.top-progress{order:3;flex-basis:100%}main{padding:20px 15px 60px}}
+@media (max-width:700px){.hero{padding:28px 20px}.hero-grid,.grid-3,.checklist{grid-template-columns:1fr}.nav-list{grid-template-columns:1fr}.section-body{padding:18px}.section-head{padding:20px}.code-panel pre{font-size:12px}}
+</style>
+</head>
+<body>
+<header class='topbar'>
+  <div class='brand'><div class='brand-mark'>链</div><div><b>单链表基本操作</b><small>逐函数拆解 · 可视化课堂</small></div></div>
+  <div class='top-progress' aria-label='课程阅读进度'><span id='progressBar'></span></div>
+  <div class='top-actions'><button class='mode-btn' id='presentBtn' type='button'>演示模式</button><button class='mode-btn' id='helpBtn' type='button'>快捷键</button></div>
+</header>
+<div class='shell'>
+  <aside class='sidebar'>
+    <div class='side-summary'><strong>本课目标</strong>先看懂“结点连接”，再逐个掌握建表、打印、插入、删除、查找，最后能独立补全代码。</div>
+    <div class='side-title'>课程目录</div>
+    <nav class='nav-list' id='lessonNav'>
+      <a class='nav-link active' href='#start' data-target='start'><span class='nav-num'>00</span><span>开场与学习地图</span></a>
+      <a class='nav-link' href='#node' data-target='node'><span class='nav-num'>01</span><span>结点与头结点</span></a>
+      <a class='nav-link' href='#length' data-target='length'><span class='nav-num'>02</span><span>getLinkLength</span></a>
+      <a class='nav-link' href='#create' data-target='create'><span class='nav-num'>03</span><span>createLinkList</span></a>
+      <a class='nav-link' href='#print' data-target='print'><span class='nav-num'>04</span><span>printLinkList</span></a>
+      <a class='nav-link' href='#insert' data-target='insert'><span class='nav-num'>05</span><span>insertNode</span></a>
+      <a class='nav-link' href='#delete' data-target='delete'><span class='nav-num'>06</span><span>deleteNode</span></a>
+      <a class='nav-link' href='#find' data-target='find'><span class='nav-num'>07</span><span>findNode</span></a>
+      <a class='nav-link' href='#main' data-target='main'><span class='nav-num'>08</span><span>main 串讲</span></a>
+      <a class='nav-link' href='#practice' data-target='practice'><span class='nav-num'>09</span><span>学生编程训练</span></a>
+      <a class='nav-link' href='#lab' data-target='lab'><span class='nav-num'>10</span><span>综合操作实验台</span></a>
+      <a class='nav-link' href='#review' data-target='review'><span class='nav-num'>11</span><span>收束与易错清单</span></a>
+    </nav>
+    <div class='side-tip'>建议讲授顺序：先只讲“指针怎么走”，再让学生自己写循环，最后把函数放回 <span class='mono'>main</span> 串起来。<br><br>演示模式：<kbd>←</kbd> <kbd>→</kbd> 翻页，<kbd>Esc</kbd> 退出。</div>
+  </aside>
+  <main>    <section class='lesson-section is-active' id='start' data-title='开场与学习地图'>
+      <div class='panel hero'>
+        <div class='hero-kicker'>Data Structures · Lab 02</div>
+        <h1>不要从 <span class='mono'>main</span> 硬背到结尾<br>先把单链表拆成六个动作</h1>
+        <p>这堂课沿着上传的 <span class='mono'>main.c</span> 逐函数讲解。每一步都先回答三个问题：这个函数要做什么？指针停在哪里？哪些边界必须判断？</p>
+        <div class='hero-grid'><div class='hero-card'><b>① 建表</b><span>头结点 + 尾插法</span></div><div class='hero-card'><b>② 访问</b><span>长度与打印遍历</span></div><div class='hero-card'><b>③ 修改</b><span>插入、删除、查找</span></div></div>
+      </div>
+      <div class='section-body panel' style='margin-top:20px'>
+        <div class='grid-2'>
+          <div>
+            <h3>先看整条调用链</h3>
+            <div class='flow'><span>分配 Head</span><i>→</i><span>createLinkList</span><i>→</i><span>printLinkList</span><i>→</i><span>insertNode</span><i>→</i><span>printLinkList</span><i>→</i><span>deleteNode</span><i>→</i><span>printLinkList</span><i>→</i><span>findNode</span></div>
+            <div class='callout warn'><b>先澄清一件事：</b>上传代码中的 <span class='mono'>createLinkList</span> 使用的是<strong>尾插法</strong>，不是前插法。输入 10、20、30，链表顺序仍是 10 → 20 → 30。</div>
+            <div class='callout'><b>共同约定：</b>头结点不存放有效元素；第 1 个数据结点是 <span class='mono'>Head-&gt;next</span>；逻辑位置从 1 开始，而不是 0。</div>
+          </div>
+          <div class='card soft'>
+            <h3>六个函数，各管一件事</h3>
+            <div class='table-wrap'><table><thead><tr><th>函数</th><th>一句话职责</th><th>关键动作</th></tr></thead><tbody>
+              <tr><td class='mono'>getLinkLength</td><td>数有效结点</td><td>一直走到 NULL</td></tr><tr><td class='mono'>createLinkList</td><td>输入 n 个元素建表</td><td>新结点接到末尾</td></tr><tr><td class='mono'>printLinkList</td><td>从头到尾输出</td><td>访问后指针后移</td></tr><tr><td class='mono'>insertNode</td><td>在位置 index 插入</td><td>先连后，再连前</td></tr><tr><td class='mono'>deleteNode</td><td>删除位置 index 结点</td><td>保存、跨接、free</td></tr><tr><td class='mono'>findNode</td><td>查值第一次出现的位置</td><td>比较后计数器 +1</td></tr>
+            </tbody></table></div>
+          </div>
+        </div>
+      </div>
+      <div class='pager'><span></span><button class='btn primary nav-step' data-next='node' type='button'>下一节：结点与头结点</button></div>
+    </section>
+
+    <section class='lesson-section' id='node' data-title='结点与头结点'>
+      <div class='panel'>
+        <div class='section-head'><div class='eyebrow'>01 · 数据结构定义</div><h2>一个结点 = 数据域 + 指针域</h2><p>学生最先要建立的心理模型：链表不是“连续排列的值”，而是一串由地址相互连接的结点。</p></div>
+        <div class='section-body'>
+          <div class='grid-2'>
+            <div>
+              <div class='code-panel'><div class='code-head'><span class='dots'><i></i><i></i><i></i></span><span>main.c · 结点定义</span></div><div class='code-lines'>
+                <div class='code-line active' data-node-line='0'><span class='ln'>1</span><span class='lc'><span class='c-kw'>typedef struct</span> <span class='c-type'>LNode</span>{</span></div>
+                <div class='code-line' data-node-line='1'><span class='ln'>2</span><span class='lc'>    <span class='c-type'>int</span> data;              <span class='c-com'>// 保存当前元素</span></span></div>
+                <div class='code-line' data-node-line='2'><span class='ln'>3</span><span class='lc'>    <span class='c-kw'>struct</span> <span class='c-type'>LNode</span>* next;  <span class='c-com'>// 保存下一个结点的地址</span></span></div>
+                <div class='code-line' data-node-line='3'><span class='ln'>4</span><span class='lc'>} <span class='c-type'>LNode</span>;</span></div>
+              </div></div>
+              <div class='callout'><b>怎么读：</b><span class='mono'>next</span> 不是“下一个值”，而是<strong>下一个结点的地址</strong>。指针走到哪里，下一步就访问哪里的结点。</div>
+            </div>
+            <div class='card'>
+              <h3>结点内存示意</h3><div style='display:flex;justify-content:center;padding:28px 0 18px'><div class='node'><div class='label'>一个 LNode</div><div class='middle'><div class='data'>10</div><div class='next'>next<br>地址</div></div></div></div>
+              <div class='pointer-row'><div class='pointer-item'><span class='pointer-name'>data</span><span class='pointer-value'>当前元素：10</span></div><div class='pointer-item'><span class='pointer-name'>next</span><span class='pointer-value'>指向下一个结点；末尾结点为 NULL</span></div></div>
+            </div>
+          </div>
+          <div class='grid-2' style='margin-top:20px'>
+            <div class='card soft'><h3>头结点为什么有用？</h3><ul class='clean'><li>对空表和非空表统一处理，插入第 1 个位置的代码不必单独改 Head。</li><li><span class='mono'>Head-&gt;next</span> 永远就是首元结点。</li><li>头结点本身不参与元素编号，也不打印它的 data。</li></ul></div>
+            <div class='card'><h3>点击按钮，观察对应域</h3><div class='control-row'><button class='btn node-focus' data-focus='0' type='button'>看整体定义</button><button class='btn node-focus' data-focus='1' type='button'>看 data</button><button class='btn node-focus' data-focus='2' type='button'>看 next</button><button class='btn node-focus' data-focus='3' type='button'>看类型名</button></div><div id='nodeExplain' class='caption-box'><span class='step-dot'>i</span>结构体把“元素值”和“下一结点地址”打包在一起。</div></div>
+          </div>
+        </div>
+      </div>
+      <div class='pager'><button class='btn nav-step' data-prev='start' type='button'>上一节</button><button class='btn primary nav-step' data-next='length' type='button'>下一节：求长度</button></div>
+    </section>
+
+    <section class='lesson-section' id='length' data-title='getLinkLength'>
+      <div class='panel'>
+        <div class='section-head'><div class='eyebrow'>02 · 辅助函数</div><h2>getLinkLength：用“走一步、数一个”求长度</h2><p>它不是装饰性函数。插入位置、删除位置能不能执行，都要先用它得到链表长度。</p></div>
+        <div class='section-body'>
+          <div class='grid-2'>
+            <div>
+              <div class='fn-signature'>int getLinkLength(LNode* L)</div>
+              <div class='trace-player' data-trace-id='length'>
+                <div class='code-panel' style='margin-top:12px'><div class='code-head'><span class='dots'><i></i><i></i><i></i></span><span>getLinkLength</span></div><div class='code-lines'>
+                  <div class='code-line active' data-trace='0'><span class='ln'>1</span><span class='lc'><span class='c-type'>int</span> <span class='c-fn'>getLinkLength</span>(<span class='c-type'>LNode</span>* L)</span></div>
+                  <div class='code-line' data-trace='1'><span class='ln'>2</span><span class='lc'>{</span></div>
+                  <div class='code-line' data-trace='2'><span class='ln'>3</span><span class='lc'>    <span class='c-type'>LNode</span>* p = L-&gt;next;  <span class='c-com'>// 从首元结点开始</span></span></div>
+                  <div class='code-line' data-trace='3'><span class='ln'>4</span><span class='lc'>    <span class='c-type'>int</span> cnt = 0;</span></div>
+                  <div class='code-line' data-trace='4'><span class='ln'>5</span><span class='lc'>    <span class='c-kw'>while</span>(p != NULL)</span></div>
+                  <div class='code-line' data-trace='5'><span class='ln'>6</span><span class='lc'>    {</span></div>
+                  <div class='code-line' data-trace='6'><span class='ln'>7</span><span class='lc'>        cnt++;</span></div>
+                  <div class='code-line' data-trace='7'><span class='ln'>8</span><span class='lc'>        p = p-&gt;next;</span></div>
+                  <div class='code-line' data-trace='8'><span class='ln'>9</span><span class='lc'>    }</span></div>
+                  <div class='code-line' data-trace='9'><span class='ln'>10</span><span class='lc'>    <span class='c-kw'>return</span> cnt;</span></div>
+                  <div class='code-line' data-trace='10'><span class='ln'>11</span><span class='lc'>}</span></div>
+                </div></div>
+                <div class='trace-controls'><button class='btn' data-trace-prev type='button'>上一步</button><button class='btn primary' data-trace-next type='button'>下一步</button><button class='btn' data-trace-reset type='button'>重来</button><span class='small muted' data-trace-count>1 / 11</span></div>
+              </div>
+            </div>
+            <div>
+              <div class='stage'>
+                <div class='stage-frame active' data-stage='0'><h3>函数入口</h3><p>传入的 <span class='mono'>L</span> 指向头结点。我们不会数 Head，因为 Head 不存有效元素。</p></div>
+                <div class='stage-frame' data-stage='1'><h3>进入函数体</h3><p>正式准备遍历链表。</p></div>
+                <div class='stage-frame' data-stage='2'><h3>建立工作指针</h3><div class='mini-list'><span class='mini-node head'>Head</span><i>→</i><span class='mini-node active'>p: 10</span><i>→</i><span class='mini-node'>20</span><i>→</i><span class='mini-node'>30</span><i>→</i><span class='mono'>NULL</span></div><p class='small'><span class='mono'>p = Head-&gt;next</span>：跳过 Head，直接到第一个数据结点。</p></div>
+                <div class='stage-frame' data-stage='3'><h3>计数器初始化</h3><p><span class='mono'>cnt = 0</span>。它只负责计数，不参与移动。</p></div>
+                <div class='stage-frame' data-stage='4'><h3>循环条件</h3><p>只要 <span class='mono'>p != NULL</span>，就说明 p 指向一个真实结点。</p></div>
+                <div class='stage-frame' data-stage='5'><h3>进入循环体</h3><p>先处理当前结点，再让指针后移。</p></div>
+                <div class='stage-frame' data-stage='6'><h3>计数</h3><p>当前 p 指向 10，所以 cnt 从 0 变成 1。后续访问 20、30 时继续增加。</p></div>
+                <div class='stage-frame' data-stage='7'><h3>指针后移</h3><div class='mini-list'><span class='mini-node head'>Head</span><i>→</i><span class='mini-node'>10</span><i>→</i><span class='mini-node active'>p: 20</span><i>→</i><span class='mini-node'>30</span><i>→</i><span class='mono'>NULL</span></div><p class='small'>关键顺序：先 cnt++，再 p = p-&gt;next。</p></div>
+                <div class='stage-frame' data-stage='8'><h3>循环结束</h3><p>p 最终到达 NULL。此时已经数过 10、20、30。</p></div>
+                <div class='stage-frame' data-stage='9'><h3>返回结果</h3><p><span class='mono'>return 3</span>。调用者得到链表长度。</p></div>
+                <div class='stage-frame' data-stage='10'><h3>函数结束</h3><p>示例链表长度为 3。</p></div>
+              </div>
+              <div class='caption-box'>
+                <div class='trace-caption active' data-caption='0'><span class='step-dot'>1</span>函数接收头结点地址 L。</div><div class='trace-caption' data-caption='1'><span class='step-dot'>2</span>进入函数，准备局部变量。</div><div class='trace-caption' data-caption='2'><span class='step-dot'>3</span>p 从首元结点开始，不数头结点。</div><div class='trace-caption' data-caption='3'><span class='step-dot'>4</span>计数器清零。</div><div class='trace-caption' data-caption='4'><span class='step-dot'>5</span>遇到 NULL 就停止遍历。</div><div class='trace-caption' data-caption='5'><span class='step-dot'>6</span>准备统计当前结点。</div><div class='trace-caption' data-caption='6'><span class='step-dot'>7</span>cnt 加一。</div><div class='trace-caption' data-caption='7'><span class='step-dot'>8</span>p 继承当前结点的 next，走向下一站。</div><div class='trace-caption' data-caption='8'><span class='step-dot'>9</span>没有结点时退出循环。</div><div class='trace-caption' data-caption='9'><span class='step-dot'>10</span>把计数结果交给调用者。</div><div class='trace-caption' data-caption='10'><span class='step-dot'>11</span>这就是插入、删除合法性判断的依据。</div>
+              </div>
+            </div>
+          </div>
+          <div class='quiz-q'><b>课堂追问：</b>空链表为什么返回 0？<div class='answer-row'><input class='short-input' type='text' id='lengthQuiz' placeholder='输入你的理由'><button class='btn primary' id='lengthCheck' type='button'>检查关键词</button><span class='result' id='lengthResult'></span></div><div class='small muted'>关键词：Head-&gt;next 为 NULL、循环不进入。</div></div>
+        </div>
+      </div>
+      <div class='pager'><button class='btn nav-step' data-prev='node' type='button'>上一节</button><button class='btn primary nav-step' data-next='create' type='button'>下一节：创建链表</button></div>
+    </section>    <section class='lesson-section' id='create' data-title='createLinkList'>
+      <div class='panel'>
+        <div class='section-head'><div class='eyebrow'>03 · 建表函数</div><h2>createLinkList：上传代码采用尾插法</h2><p>尾插法保留输入顺序；头插法会反转输入顺序。讲课时先把“新结点接到哪里”讲清楚，再比较两种方法。</p></div>
+        <div class='section-body'>
+          <div class='grid-2'>
+            <div>
+              <div class='fn-signature'>void createLinkList(LNode* L, int n)</div>
+              <div class='trace-player' data-trace-id='create'>
+                <div class='code-panel' style='margin-top:12px'><div class='code-head'><span class='dots'><i></i><i></i><i></i></span><span>createLinkList · 尾插法</span></div><div class='code-lines'>
+                  <div class='code-line active' data-trace='0'><span class='ln'>1</span><span class='lc'><span class='c-kw'>void</span> <span class='c-fn'>createLinkList</span>(<span class='c-type'>LNode</span>* L, <span class='c-type'>int</span> n)</span></div>
+                  <div class='code-line' data-trace='1'><span class='ln'>2</span><span class='lc'>{</span></div>
+                  <div class='code-line' data-trace='2'><span class='ln'>3</span><span class='lc'>    <span class='c-type'>LNode</span>* tmp = L;  <span class='c-com'>// tmp 始终指向尾结点</span></span></div>
+                  <div class='code-line' data-trace='3'><span class='ln'>4</span><span class='lc'>    <span class='c-kw'>for</span>(<span class='c-type'>int</span> i = 0; i &lt; n; i++)</span></div>
+                  <div class='code-line' data-trace='4'><span class='ln'>5</span><span class='lc'>    {</span></div>
+                  <div class='code-line' data-trace='5'><span class='ln'>6</span><span class='lc'>        <span class='c-type'>LNode</span>* newNode = (<span class='c-type'>LNode</span>*) <span class='c-fn'>malloc</span>(<span class='c-kw'>sizeof</span>(<span class='c-type'>LNode</span>));</span></div>
+                  <div class='code-line' data-trace='6'><span class='ln'>7</span><span class='lc'>        <span class='c-fn'>printf</span>(<span class='c-str'>"第%d个元素的值: "</span>, i + 1);</span></div>
+                  <div class='code-line' data-trace='7'><span class='ln'>8</span><span class='lc'>        <span class='c-fn'>scanf</span>(<span class='c-str'>"%d"</span>, &amp;newNode-&gt;data);</span></div>
+                  <div class='code-line' data-trace='8'><span class='ln'>9</span><span class='lc'>        newNode-&gt;next = NULL;</span></div>
+                  <div class='code-line' data-trace='9'><span class='ln'>10</span><span class='lc'>        tmp-&gt;next = newNode;  <span class='c-com'>// 新结点接在尾部</span></span></div>
+                  <div class='code-line' data-trace='10'><span class='ln'>11</span><span class='lc'>        tmp = newNode;        <span class='c-com'>// 更新尾指针</span></span></div>
+                  <div class='code-line' data-trace='11'><span class='ln'>12</span><span class='lc'>    }</span></div>
+                  <div class='code-line' data-trace='12'><span class='ln'>13</span><span class='lc'>}</span></div>
+                </div></div>
+                <div class='trace-controls'><button class='btn' data-trace-prev type='button'>上一步</button><button class='btn primary' data-trace-next type='button'>下一步</button><button class='btn' data-trace-reset type='button'>重来</button><span class='small muted' data-trace-count>1 / 13</span></div>
+              </div>
+            </div>
+            <div>
+              <div class='stage'>
+                <div class='stage-frame active' data-stage='0'><h3>输入规模 n</h3><p>函数只负责在已经存在的 Head 后面建表。</p></div>
+                <div class='stage-frame' data-stage='1'><h3>进入函数</h3><p>准备创建 n 个新结点。</p></div>
+                <div class='stage-frame' data-stage='2'><h3>确定尾指针</h3><div class='mini-list'><span class='mini-node head active'>Head / tmp</span><i>→</i><span class='mono'>NULL</span></div><p>初始时尾结点就是 Head。</p></div>
+                <div class='stage-frame' data-stage='3'><h3>循环 n 次</h3><p>每次只处理一个输入元素。</p></div>
+                <div class='stage-frame' data-stage='4'><h3>准备创建</h3><p>本轮创建新结点。</p></div>
+                <div class='stage-frame' data-stage='5'><h3>申请结点</h3><p><span class='mono'>malloc</span> 返回一块可保存 LNode 的内存，newNode 保存它的地址。</p></div>
+                <div class='stage-frame' data-stage='6'><h3>提示输入</h3><p>输出“第 i+1 个元素的值”。i 从 0 开始，所以位置显示要加 1。</p></div>
+                <div class='stage-frame' data-stage='7'><h3>读入数据</h3><p>第一次输入 10，写入 <span class='mono'>newNode-&gt;data</span>。</p></div>
+                <div class='stage-frame' data-stage='8'><h3>新结点暂为末尾</h3><p><span class='mono'>newNode-&gt;next = NULL</span>，先保证它不会指向随机地址。</p></div>
+                <div class='stage-frame' data-stage='9'><h3>接到尾部</h3><div class='mini-list'><span class='mini-node head'>Head / tmp</span><i>→</i><span class='mini-node active'>10</span><i>→</i><span class='mono'>NULL</span></div><p>输入 10、20、30 时，顺序保持 10 → 20 → 30。</p></div>
+                <div class='stage-frame' data-stage='10'><h3>更新尾指针</h3><div class='mini-list'><span class='mini-node head'>Head</span><i>→</i><span class='mini-node active'>10 / tmp</span><i>→</i><span class='mono'>NULL</span></div><p>tmp 移动到刚插入的新结点。</p></div>
+                <div class='stage-frame' data-stage='11'><h3>下一轮</h3><p>循环重复：申请、输入、接到 tmp 后面、后移 tmp。</p></div>
+                <div class='stage-frame' data-stage='12'><h3>建表完成</h3><div class='mini-list'><span class='mini-node head'>Head</span><i>→</i><span class='mini-node'>10</span><i>→</i><span class='mini-node'>20</span><i>→</i><span class='mini-node active'>30 / tmp</span><i>→</i><span class='mono'>NULL</span></div></div>
+              </div>
+              <div class='caption-box'>
+                <div class='trace-caption active' data-caption='0'><span class='step-dot'>1</span>建表需要链表头结点和元素个数。</div><div class='trace-caption' data-caption='1'><span class='step-dot'>2</span>进入循环前先准备尾指针。</div><div class='trace-caption' data-caption='2'><span class='step-dot'>3</span>tmp 从 Head 出发；空表时 Head 就是尾结点。</div><div class='trace-caption' data-caption='3'><span class='step-dot'>4</span>共创建 n 个数据结点。</div><div class='trace-caption' data-caption='4'><span class='step-dot'>5</span>每轮先准备一个新结点。</div><div class='trace-caption' data-caption='5'><span class='step-dot'>6</span>malloc 分配空间；教学中可补充检查返回值是否为 NULL。</div><div class='trace-caption' data-caption='6'><span class='step-dot'>7</span>i 从 0 开始，所以编号要写 i+1。</div><div class='trace-caption' data-caption='7'><span class='step-dot'>8</span>把输入值写进新结点的 data。</div><div class='trace-caption' data-caption='8'><span class='step-dot'>9</span>新结点先设置成末尾，防止 next 悬空。</div><div class='trace-caption' data-caption='9'><span class='step-dot'>10</span>让旧尾结点指向新结点，完成尾插。</div><div class='trace-caption' data-caption='10'><span class='step-dot'>11</span>tmp 跟着移动到新尾结点，下一轮才能继续接在后面。</div><div class='trace-caption' data-caption='11'><span class='step-dot'>12</span>循环处理下一个元素。</div><div class='trace-caption' data-caption='12'><span class='step-dot'>13</span>结束后，链表顺序和输入顺序相同。</div>
+              </div>
+              <div class='callout bad' style='margin-top:14px'><b>边界提醒：</b>若 n=0，原代码不会建立任何数据结点；但 Head-&gt;next 没有显式设为 NULL，遍历时可能出错。更稳妥的写法是在循环前执行 <span class='mono'>L-&gt;next = NULL</span>。</div>
+            </div>
+          </div>
+          <div class='grid-2' style='margin-top:22px'>
+            <div class='card soft'><h3>后插法：输入顺序 = 链表顺序</h3><div class='code-panel'><pre><span class='c-com'>// 核心连接：接到 tail 后面</span>
+tail-&gt;next = newNode;
+tail = newNode;</pre></div><div class='mini-list' style='margin-top:14px'><span class='mini-node head'>Head</span><i>→</i><span class='mini-node'>10</span><i>→</i><span class='mini-node'>20</span><i>→</i><span class='mini-node'>30</span><i>→</i><span class='mono'>NULL</span></div></div>
+            <div class='card'><h3>前插法 / 头插法：输入顺序会反转</h3><div class='code-panel'><pre><span class='c-com'>// 前插法核心：每次都插到 Head 后面</span>
+newNode-&gt;next = L-&gt;next;
+L-&gt;next = newNode;</pre></div><div class='mini-list' style='margin-top:14px'><span class='mini-node head'>Head</span><i>→</i><span class='mini-node active'>30</span><i>→</i><span class='mini-node'>20</span><i>→</i><span class='mini-node'>10</span><i>→</i><span class='mono'>NULL</span></div><p class='small muted'>输入仍是 10、20、30，但由于每次都插到最前面，输出顺序变成 30、20、10。</p></div>
+          </div>
+          <div class='quiz-q'><b>小结检查：</b>如果输入 1、2、3，上传代码建出的链表是什么顺序？<div class='answer-row'><input class='short-input' id='createQuiz' type='text' placeholder='例如：1 -> 2 -> 3'><button class='btn primary' id='createCheck' type='button'>检查</button><span class='result' id='createResult'></span></div></div>
+        </div>
+      </div>
+      <div class='pager'><button class='btn nav-step' data-prev='length' type='button'>上一节</button><button class='btn primary nav-step' data-next='print' type='button'>下一节：打印链表</button></div>
+    </section>
+
+    <section class='lesson-section' id='print' data-title='printLinkList'>
+      <div class='panel'>
+        <div class='section-head'><div class='eyebrow'>04 · 访问函数</div><h2>printLinkList：遍历的固定四步</h2><p>打印、求长度、查找都依赖同一套遍历模板；讲透一次，后面可以让学生自己迁移。</p></div>
+        <div class='section-body'>
+          <div class='grid-2'>
+            <div>
+              <div class='code-panel'><div class='code-head'><span class='dots'><i></i><i></i><i></i></span><span>printLinkList</span></div><pre><span class='c-kw'>void</span> <span class='c-fn'>printLinkList</span>(<span class='c-type'>LNode</span>* L)
+{
+    <span class='c-type'>LNode</span>* p = L-&gt;next;       <span class='c-com'>// 1. 从首元结点开始</span>
+    <span class='c-kw'>while</span>(p != NULL)          <span class='c-com'>// 2. 还有结点</span>
+    {
+        <span class='c-fn'>printf</span>(<span class='c-str'>"%d "</span>, p-&gt;data);  <span class='c-com'>// 3. 处理当前结点</span>
+        p = p-&gt;next;            <span class='c-com'>// 4. 走到下一个</span>
+    }
+    <span class='c-fn'>printf</span>(<span class='c-str'>"\n"</span>);
+}</pre></div>
+              <div class='callout good'><b>可迁移模板：</b>初始化工作指针 → 判断非空 → 访问 data → 指针后移。删除和插入只是把“访问 data”换成“找到前驱后改连线”。</div>
+            </div>
+            <div>
+              <div class='stage' id='printStage'><h3>点击“运行”：10 → 20 → 30</h3><div class='list-flow' id='printFlow'></div><div class='caption-box' id='printCaption'><span class='step-dot'>i</span>准备从 Head 后面的第一个结点开始。</div></div>
+              <div class='trace-controls'><button class='btn primary' id='printRun' type='button'>运行遍历</button><button class='btn' id='printStep' type='button'>单步</button><button class='btn' id='printReset' type='button'>重来</button></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class='pager'><button class='btn nav-step' data-prev='create' type='button'>上一节</button><button class='btn primary nav-step' data-next='insert' type='button'>下一节：插入结点</button></div>
+    </section>    <section class='lesson-section' id='insert' data-title='insertNode'>
+      <div class='panel'>
+        <div class='section-head'><div class='eyebrow'>05 · 基本操作 · 重点</div><h2>insertNode：先找前驱，再“先连后、后连前”</h2><p>插入最容易错的是连接顺序。请让学生记住：新结点先接住原来的后半段，前驱再改指向新结点。</p></div>
+        <div class='section-body'>
+          <div class='grid-2'>
+            <div>
+              <div class='fn-signature'>bool insertNode(LNode* L, int val, int index)</div>
+              <div class='trace-player' data-trace-id='insert'>
+                <div class='code-panel' style='margin-top:12px'><div class='code-head'><span class='dots'><i></i><i></i><i></i></span><span>insertNode</span></div><div class='code-lines'>
+                  <div class='code-line active' data-trace='0'><span class='ln'>1</span><span class='lc'><span class='c-type'>bool</span> <span class='c-fn'>insertNode</span>(<span class='c-type'>LNode</span>* L, <span class='c-type'>int</span> val, <span class='c-type'>int</span> index)</span></div>
+                  <div class='code-line' data-trace='1'><span class='ln'>2</span><span class='lc'>{</span></div>
+                  <div class='code-line' data-trace='2'><span class='ln'>3</span><span class='lc'>    <span class='c-type'>LNode</span>* p = L;</span></div>
+                  <div class='code-line' data-trace='3'><span class='ln'>4</span><span class='lc'>    <span class='c-type'>int</span> len = <span class='c-fn'>getLinkLength</span>(L);</span></div>
+                  <div class='code-line' data-trace='4'><span class='ln'>5</span><span class='lc'>    <span class='c-kw'>if</span>(index &lt; 1 || index &gt; len + 1) <span class='c-kw'>return</span> false;</span></div>
+                  <div class='code-line' data-trace='5'><span class='ln'>6</span><span class='lc'>    <span class='c-kw'>for</span>(<span class='c-type'>int</span> i = 1; i &lt;= index - 1; i++)</span></div>
+                  <div class='code-line' data-trace='6'><span class='ln'>7</span><span class='lc'>        p = p-&gt;next;  <span class='c-com'>// 找到第 index-1 个结点</span></span></div>
+                  <div class='code-line' data-trace='7'><span class='ln'>8</span><span class='lc'>    <span class='c-type'>LNode</span>* newNode = (<span class='c-type'>LNode</span>*) <span class='c-fn'>malloc</span>(<span class='c-kw'>sizeof</span>(<span class='c-type'>LNode</span>));</span></div>
+                  <div class='code-line' data-trace='8'><span class='ln'>9</span><span class='lc'>    newNode-&gt;data = val;</span></div>
+                  <div class='code-line' data-trace='9'><span class='ln'>10</span><span class='lc'>    newNode-&gt;next = p-&gt;next;  <span class='c-com'>// 先连后半段</span></span></div>
+                  <div class='code-line' data-trace='10'><span class='ln'>11</span><span class='lc'>    p-&gt;next = newNode;        <span class='c-com'>// 前驱再指向新结点</span></span></div>
+                  <div class='code-line' data-trace='11'><span class='ln'>12</span><span class='lc'>    <span class='c-kw'>return</span> true;</span></div>
+                  <div class='code-line' data-trace='12'><span class='ln'>13</span><span class='lc'>}</span></div>
+                </div></div>
+                <div class='trace-controls'><button class='btn' data-trace-prev type='button'>上一步</button><button class='btn primary' data-trace-next type='button'>下一步</button><button class='btn' data-trace-reset type='button'>重来</button><span class='small muted' data-trace-count>1 / 13</span></div>
+              </div>
+            </div>
+            <div>
+              <div class='stage'>
+                <div class='stage-frame active' data-stage='0'><h3>目标：位置 2 插入 99</h3><div class='mini-list'><span class='mini-node head'>Head</span><i>→</i><span class='mini-node'>10</span><i>→</i><span class='mini-node'>20</span><i>→</i><span class='mini-node'>30</span><i>→</i><span class='mono'>NULL</span></div></div>
+                <div class='stage-frame' data-stage='1'><h3>进入函数</h3><p>参数：val=99，index=2。先准备用返回值告诉调用者是否成功。</p></div>
+                <div class='stage-frame' data-stage='2'><h3>p 从 Head 开始</h3><p>为什么不是 p=L-&gt;next？因为插入位置 1 时需要修改 Head 的 next，p 必须能停在前驱结点 Head 上。</p></div>
+                <div class='stage-frame' data-stage='3'><h3>求长度</h3><p>len=3。合法插入位置范围是 1 到 4；位置 4 表示追加到末尾。</p></div>
+                <div class='stage-frame' data-stage='4'><h3>边界检查</h3><p>index=2，满足 1 ≤ 2 ≤ 4，可以继续。</p></div>
+                <div class='stage-frame' data-stage='5'><h3>寻找前驱</h3><p>循环执行 1 次。目标是位置 2 的前驱，即位置 1。</p></div>
+                <div class='stage-frame' data-stage='6'><h3>p 来到前驱</h3><div class='mini-list'><span class='mini-node head'>Head</span><i>→</i><span class='mini-node active'>10 / p</span><i>→</i><span class='mini-node'>20</span><i>→</i><span class='mini-node'>30</span><i>→</i><span class='mono'>NULL</span></div></div>
+                <div class='stage-frame' data-stage='7'><h3>申请新结点</h3><p>newNode 将来保存 99。malloc 失败时原代码没有检查，这是可以补充的健壮性问题。</p></div>
+                <div class='stage-frame' data-stage='8'><h3>写入数据</h3><div class='mini-list'><span class='mini-node head'>Head</span><i>→</i><span class='mini-node'>10 / p</span><i>→</i><span class='mini-node'>20</span><i>→</i><span class='mini-node'>30</span><i>→</i><span class='mono'>NULL</span><span class='arrow'>+</span><span class='mini-node active'>99 / newNode</span></div></div>
+                <div class='stage-frame' data-stage='9'><h3>先连后半段</h3><div class='mini-list'><span class='mini-node head'>Head</span><i>→</i><span class='mini-node'>10 / p</span><i>→</i><span class='mini-node active'>99</span><i>→</i><span class='mini-node'>20</span><i>→</i><span class='mini-node'>30</span><i>→</i><span class='mono'>NULL</span></div><p><span class='mono'>newNode-&gt;next = p-&gt;next</span>，99 先认住 20。</p></div>
+                <div class='stage-frame' data-stage='10'><h3>再连前半段</h3><div class='mini-list'><span class='mini-node head'>Head</span><i>→</i><span class='mini-node'>10 / p</span><i>→</i><span class='mini-node active'>99</span><i>→</i><span class='mini-node'>20</span><i>→</i><span class='mini-node'>30</span><i>→</i><span class='mono'>NULL</span></div><p><span class='mono'>p-&gt;next = newNode</span>，10 改为指向 99。</p></div>
+                <div class='stage-frame' data-stage='11'><h3>返回成功</h3><p>main 收到 true，随后打印新链表。</p></div>
+                <div class='stage-frame' data-stage='12'><h3>结果</h3><div class='mini-list'><span class='mini-node head'>Head</span><i>→</i><span class='mini-node'>10</span><i>→</i><span class='mini-node'>99</span><i>→</i><span class='mini-node'>20</span><i>→</i><span class='mini-node'>30</span><i>→</i><span class='mono'>NULL</span></div></div>
+              </div>
+              <div class='caption-box'>
+                <div class='trace-caption active' data-caption='0'><span class='step-dot'>1</span>明确 val、index 的含义和返回值。</div><div class='trace-caption' data-caption='1'><span class='step-dot'>2</span>进入函数。</div><div class='trace-caption' data-caption='2'><span class='step-dot'>3</span>p 从 Head 出发，准备寻找插入位置的前驱。</div><div class='trace-caption' data-caption='3'><span class='step-dot'>4</span>调用 getLinkLength 得到 3。</div><div class='trace-caption' data-caption='4'><span class='step-dot'>5</span>index 允许到 len+1，表示可以追加在最后一个结点之后。</div><div class='trace-caption' data-caption='5'><span class='step-dot'>6</span>移动 index-1 次，p 落到前驱。</div><div class='trace-caption' data-caption='6'><span class='step-dot'>7</span>index=2 时，p 指向 10。</div><div class='trace-caption' data-caption='7'><span class='step-dot'>8</span>申请新结点。</div><div class='trace-caption' data-caption='8'><span class='step-dot'>9</span>把 val 写入新结点。</div><div class='trace-caption' data-caption='9'><span class='step-dot'>10</span>先让新结点接住原来 p 后面的链。</div><div class='trace-caption' data-caption='10'><span class='step-dot'>11</span>再让 p 指向新结点。</div><div class='trace-caption' data-caption='11'><span class='step-dot'>12</span>返回 true。</div><div class='trace-caption' data-caption='12'><span class='step-dot'>13</span>链表变为 10 → 99 → 20 → 30。</div>
+              </div>
+            </div>
+          </div>
+          <div class='grid-2' style='margin-top:20px'>
+            <div class='card'><h3>合法位置</h3><div class='table-wrap'><table><thead><tr><th>index</th><th>含义</th><th>是否合法</th></tr></thead><tbody><tr><td>0</td><td>第 0 个位置</td><td>否，编号从 1 开始</td></tr><tr><td>1</td><td>插在首元结点之前</td><td>是，p 停在 Head</td></tr><tr><td>1..len</td><td>插在已有结点之前</td><td>是</td></tr><tr><td>len+1</td><td>追加到末尾</td><td>是，p 停在原尾结点</td></tr><tr><td>len+2 以上</td><td>越过末尾</td><td>否</td></tr></tbody></table></div></div>
+            <div class='card soft'><h3>最危险的反例</h3><div class='mini-list'><span class='mini-node head'>Head</span><i>→</i><span class='mini-node'>10 / p</span><i>→</i><span class='mini-node'>20</span><i>→</i><span class='mini-node'>30</span><i>→</i><span class='mono'>NULL</span></div><div class='code-panel' style='margin-top:12px'><pre><span class='c-com'>// 错误：先把 p-&gt;next 改掉</span>
+p-&gt;next = newNode;
+newNode-&gt;next = p-&gt;next; <span class='c-com'>// 原 20 已经找不到</span></pre></div><div class='callout bad'>连接顺序必须是 newNode-&gt;next = p-&gt;next，然后才执行 p-&gt;next = newNode。</div></div>
+          </div>
+        </div>
+      </div>
+      <div class='pager'><button class='btn nav-step' data-prev='print' type='button'>上一节</button><button class='btn primary nav-step' data-next='delete' type='button'>下一节：删除结点</button></div>
+    </section>
+
+    <section class='lesson-section' id='delete' data-title='deleteNode'>
+      <div class='panel'>
+        <div class='section-head'><div class='eyebrow'>06 · 基本操作 · 重点</div><h2>deleteNode：保存目标、跨接指针、释放内存</h2><p>删除不是把 data 改成 0，而是让前驱结点绕过目标结点，并释放目标结点占用的内存。</p></div>
+        <div class='section-body'>
+          <div class='grid-2'>
+            <div>
+              <div class='fn-signature'>bool deleteNode(LNode* L, int index)</div>
+              <div class='trace-player' data-trace-id='delete'>
+                <div class='code-panel' style='margin-top:12px'><div class='code-head'><span class='dots'><i></i><i></i><i></i></span><span>deleteNode</span></div><div class='code-lines'>
+                  <div class='code-line active' data-trace='0'><span class='ln'>1</span><span class='lc'><span class='c-type'>bool</span> <span class='c-fn'>deleteNode</span>(<span class='c-type'>LNode</span>* L, <span class='c-type'>int</span> index)</span></div>
+                  <div class='code-line' data-trace='1'><span class='ln'>2</span><span class='lc'>{</span></div>
+                  <div class='code-line' data-trace='2'><span class='ln'>3</span><span class='lc'>    <span class='c-type'>LNode</span>* p = L;</span></div>
+                  <div class='code-line' data-trace='3'><span class='ln'>4</span><span class='lc'>    <span class='c-type'>int</span> len = <span class='c-fn'>getLinkLength</span>(L);</span></div>
+                  <div class='code-line' data-trace='4'><span class='ln'>5</span><span class='lc'>    <span class='c-kw'>if</span>(index &lt; 1 || index &gt; len) <span class='c-kw'>return</span> false;</span></div>
+                  <div class='code-line' data-trace='5'><span class='ln'>6</span><span class='lc'>    <span class='c-kw'>for</span>(<span class='c-type'>int</span> i = 1; i &lt;= index - 1; i++)</span></div>
+                  <div class='code-line' data-trace='6'><span class='ln'>7</span><span class='lc'>        p = p-&gt;next;  <span class='c-com'>// p 最终是待删结点的前驱</span></span></div>
+                  <div class='code-line' data-trace='7'><span class='ln'>8</span><span class='lc'>    <span class='c-type'>LNode</span>* newNode = p-&gt;next;  <span class='c-com'>// 保存待删结点</span></span></div>
+                  <div class='code-line' data-trace='8'><span class='ln'>9</span><span class='lc'>    p-&gt;next = p-&gt;next-&gt;next;      <span class='c-com'>// 绕过待删结点</span></span></div>
+                  <div class='code-line' data-trace='9'><span class='ln'>10</span><span class='lc'>    <span class='c-fn'>free</span>(newNode);               <span class='c-com'>// 释放内存</span></span></div>
+                  <div class='code-line' data-trace='10'><span class='ln'>11</span><span class='lc'>    <span class='c-kw'>return</span> true;</span></div>
+                  <div class='code-line' data-trace='11'><span class='ln'>12</span><span class='lc'>}</span></div>
+                </div></div>
+                <div class='trace-controls'><button class='btn' data-trace-prev type='button'>上一步</button><button class='btn primary' data-trace-next type='button'>下一步</button><button class='btn' data-trace-reset type='button'>重来</button><span class='small muted' data-trace-count>1 / 12</span></div>
+              </div>
+            </div>
+            <div>
+              <div class='stage'>
+                <div class='stage-frame active' data-stage='0'><h3>目标：删除位置 2 的 20</h3><div class='mini-list'><span class='mini-node head'>Head</span><i>→</i><span class='mini-node'>10</span><i>→</i><span class='mini-node'>20</span><i>→</i><span class='mini-node'>30</span><i>→</i><span class='mono'>NULL</span></div></div>
+                <div class='stage-frame' data-stage='1'><h3>进入函数</h3><p>返回值说明删除是否成功。</p></div>
+                <div class='stage-frame' data-stage='2'><h3>p 从 Head 开始</h3><p>要删除结点，必须先找到它的前驱，才能改 next。</p></div>
+                <div class='stage-frame' data-stage='3'><h3>求长度</h3><p>len=3，因此合法删除位置是 1 到 3，不能删除 len+1。</p></div>
+                <div class='stage-frame' data-stage='4'><h3>检查位置</h3><p>index=2 合法。</p></div>
+                <div class='stage-frame' data-stage='5'><h3>移动到前驱</h3><p>执行 index-1=1 次，p 从 Head 移到 10。</p></div>
+                <div class='stage-frame' data-stage='6'><h3>p 已到前驱</h3><div class='mini-list'><span class='mini-node head'>Head</span><i>→</i><span class='mini-node active'>10 / p</span><i>→</i><span class='mini-node'>20</span><i>→</i><span class='mini-node'>30</span><i>→</i><span class='mono'>NULL</span></div></div>
+                <div class='stage-frame' data-stage='7'><h3>保存待删结点</h3><div class='mini-list'><span class='mini-node head'>Head</span><i>→</i><span class='mini-node'>10 / p</span><i>→</i><span class='mini-node danger'>20 / newNode</span><i>→</i><span class='mini-node'>30</span><i>→</i><span class='mono'>NULL</span></div><p>不先保存地址，跨接之后就找不到这块内存，也就无法 free。</p></div>
+                <div class='stage-frame' data-stage='8'><h3>跨接</h3><div class='mini-list'><span class='mini-node head'>Head</span><i>→</i><span class='mini-node active'>10 / p</span><i>→</i><span class='mini-node gone'>20</span><i>→</i><span class='mini-node active'>30</span><i>→</i><span class='mono'>NULL</span></div><p>p-&gt;next = p-&gt;next-&gt;next，10 直接指向 30。</p></div>
+                <div class='stage-frame' data-stage='9'><h3>释放内存</h3><p>free(newNode) 归还 20 所占用内存。free 后不要继续通过 newNode 访问 data 或 next。</p></div>
+                <div class='stage-frame' data-stage='10'><h3>返回成功</h3><p>main 收到 true，再打印链表。</p></div>
+                <div class='stage-frame' data-stage='11'><h3>结果</h3><div class='mini-list'><span class='mini-node head'>Head</span><i>→</i><span class='mini-node'>10</span><i>→</i><span class='mini-node'>30</span><i>→</i><span class='mono'>NULL</span></div></div>
+              </div>
+              <div class='caption-box'>
+                <div class='trace-caption active' data-caption='0'><span class='step-dot'>1</span>删除函数需要头结点和逻辑位置。</div><div class='trace-caption' data-caption='1'><span class='step-dot'>2</span>进入函数。</div><div class='trace-caption' data-caption='2'><span class='step-dot'>3</span>p 从 Head 出发，负责寻找前驱。</div><div class='trace-caption' data-caption='3'><span class='step-dot'>4</span>先计算长度。</div><div class='trace-caption' data-caption='4'><span class='step-dot'>5</span>删除位置不能超过 len；len+1 不是结点。</div><div class='trace-caption' data-caption='5'><span class='step-dot'>6</span>移动 index-1 次。</div><div class='trace-caption' data-caption='6'><span class='step-dot'>7</span>p 停在待删结点的前驱。</div><div class='trace-caption' data-caption='7'><span class='step-dot'>8</span>用 newNode 保存待删结点地址。</div><div class='trace-caption' data-caption='8'><span class='step-dot'>9</span>让前驱绕过待删结点。</div><div class='trace-caption' data-caption='9'><span class='step-dot'>10</span>释放已经摘下来的结点。</div><div class='trace-caption' data-caption='10'><span class='step-dot'>11</span>返回成功。</div><div class='trace-caption' data-caption='11'><span class='step-dot'>12</span>链表变为 10 → 30。</div>
+              </div>
+            </div>
+          </div>
+          <div class='grid-2' style='margin-top:20px'>
+            <div class='card soft'><h3>删除模板</h3><div class='code-panel'><pre><span class='c-com'>// 1. 找到前驱 p</span>
+<span class='c-com'>// 2. 保存要删除的结点</span>
+LNode* victim = p-&gt;next;
+<span class='c-com'>// 3. 前驱绕过 victim</span>
+p-&gt;next = victim-&gt;next;
+<span class='c-com'>// 4. 释放内存</span>
+free(victim);</pre></div></div>
+            <div class='card'><h3>边界与易错点</h3><ul class='clean'><li>删除位置必须满足 <span class='mono'>1 ≤ index ≤ len</span>，不能等于 len+1。</li><li>p 从 Head 出发，因为删除第 1 个结点时也要改 Head-&gt;next。</li><li>必须先保存待删结点，否则跨接后无法 free。</li><li>free 后不能继续使用已释放结点的数据。</li></ul></div>
+          </div>
+        </div>
+      </div>
+      <div class='pager'><button class='btn nav-step' data-prev='insert' type='button'>上一节</button><button class='btn primary nav-step' data-next='find' type='button'>下一节：查找元素</button></div>
+    </section>    <section class='lesson-section' id='find' data-title='findNode'>
+      <div class='panel'>
+        <div class='section-head'><div class='eyebrow'>07 · 基本操作</div><h2>findNode：查值，不是查“地址”</h2><p>函数返回第一次匹配的逻辑位置；如果走到 NULL 还没找到，返回 -1。重复元素默认返回第一个位置。</p></div>
+        <div class='section-body'>
+          <div class='grid-2'>
+            <div>
+              <div class='fn-signature'>int findNode(LNode* L, int val)</div>
+              <div class='trace-player' data-trace-id='find'>
+                <div class='code-panel' style='margin-top:12px'><div class='code-head'><span class='dots'><i></i><i></i><i></i></span><span>findNode</span></div><div class='code-lines'>
+                  <div class='code-line active' data-trace='0'><span class='ln'>1</span><span class='lc'><span class='c-type'>int</span> <span class='c-fn'>findNode</span>(<span class='c-type'>LNode</span>* L, <span class='c-type'>int</span> val)</span></div>
+                  <div class='code-line' data-trace='1'><span class='ln'>2</span><span class='lc'>{</span></div>
+                  <div class='code-line' data-trace='2'><span class='ln'>3</span><span class='lc'>    <span class='c-type'>LNode</span>* p = L-&gt;next;</span></div>
+                  <div class='code-line' data-trace='3'><span class='ln'>4</span><span class='lc'>    <span class='c-type'>int</span> index = 1;</span></div>
+                  <div class='code-line' data-trace='4'><span class='ln'>5</span><span class='lc'>    <span class='c-kw'>while</span>(p != NULL &amp;&amp; p-&gt;data != val)</span></div>
+                  <div class='code-line' data-trace='5'><span class='ln'>6</span><span class='lc'>    {</span></div>
+                  <div class='code-line' data-trace='6'><span class='ln'>7</span><span class='lc'>        index++;</span></div>
+                  <div class='code-line' data-trace='7'><span class='ln'>8</span><span class='lc'>        p = p-&gt;next;</span></div>
+                  <div class='code-line' data-trace='8'><span class='ln'>9</span><span class='lc'>    }</span></div>
+                  <div class='code-line' data-trace='9'><span class='ln'>10</span><span class='lc'>    <span class='c-kw'>return</span> p == NULL ? -1 : index;</span></div>
+                  <div class='code-line' data-trace='10'><span class='ln'>11</span><span class='lc'>}</span></div>
+                </div></div>
+                <div class='trace-controls'><button class='btn' data-trace-prev type='button'>上一步</button><button class='btn primary' data-trace-next type='button'>下一步</button><button class='btn' data-trace-reset type='button'>重来</button><span class='small muted' data-trace-count>1 / 11</span></div>
+              </div>
+            </div>
+            <div>
+              <div class='stage'>
+                <div class='stage-frame active' data-stage='0'><h3>目标：查找 20</h3><div class='mini-list'><span class='mini-node head'>Head</span><i>→</i><span class='mini-node'>10</span><i>→</i><span class='mini-node'>20</span><i>→</i><span class='mini-node'>30</span><i>→</i><span class='mono'>NULL</span></div></div>
+                <div class='stage-frame' data-stage='1'><h3>进入函数</h3><p>val=20。找不到时约定返回 -1。</p></div>
+                <div class='stage-frame' data-stage='2'><h3>p 指向首元结点</h3><div class='mini-list'><span class='mini-node head'>Head</span><i>→</i><span class='mini-node active'>10 / p</span><i>→</i><span class='mini-node'>20</span><i>→</i><span class='mini-node'>30</span><i>→</i><span class='mono'>NULL</span></div></div>
+                <div class='stage-frame' data-stage='3'><h3>index 从 1 开始</h3><p>逻辑位置从 1 开始，所以首个元素的候选位置就是 1。</p></div>
+                <div class='stage-frame' data-stage='4'><h3>循环条件</h3><p>只要结点存在，并且数据不等于 val，就继续找。两个条件用 &amp;&amp; 连接，且 p!=NULL 写在前面，避免空指针访问。</p></div>
+                <div class='stage-frame' data-stage='5'><h3>进入循环体</h3><p>当前 10 不是 20，准备跳过它。</p></div>
+                <div class='stage-frame' data-stage='6'><h3>位置先加一</h3><p>index 从 1 变为 2，准备指向下一结点。</p></div>
+                <div class='stage-frame' data-stage='7'><h3>p 后移</h3><div class='mini-list'><span class='mini-node head'>Head</span><i>→</i><span class='mini-node'>10</span><i>→</i><span class='mini-node active'>20 / p</span><i>→</i><span class='mini-node'>30</span><i>→</i><span class='mono'>NULL</span></div><p>此时 p-&gt;data == val，循环下一轮判断时停止。</p></div>
+                <div class='stage-frame' data-stage='8'><h3>退出循环</h3><p>因为 p 不为 NULL，所以不是“没找到”，而是找到了。</p></div>
+                <div class='stage-frame' data-stage='9'><h3>返回位置</h3><p>返回 index=2。</p></div>
+                <div class='stage-frame' data-stage='10'><h3>函数结束</h3><p>main 输出“查找该元素的位置为: 2”。</p></div>
+              </div>
+              <div class='caption-box'>
+                <div class='trace-caption active' data-caption='0'><span class='step-dot'>1</span>函数接收待查找的值。</div><div class='trace-caption' data-caption='1'><span class='step-dot'>2</span>进入函数。</div><div class='trace-caption' data-caption='2'><span class='step-dot'>3</span>从第一个数据结点开始。</div><div class='trace-caption' data-caption='3'><span class='step-dot'>4</span>位置计数器从 1 开始。</div><div class='trace-caption' data-caption='4'><span class='step-dot'>5</span>未到末尾且当前值不匹配时继续。</div><div class='trace-caption' data-caption='5'><span class='step-dot'>6</span>当前结点不是目标。</div><div class='trace-caption' data-caption='6'><span class='step-dot'>7</span>跳过当前结点，位置加一。</div><div class='trace-caption' data-caption='7'><span class='step-dot'>8</span>p 移到下一结点。</div><div class='trace-caption' data-caption='8'><span class='step-dot'>9</span>循环条件检查后退出。</div><div class='trace-caption' data-caption='9'><span class='step-dot'>10</span>p 非空说明找到，返回当前 index。</div><div class='trace-caption' data-caption='10'><span class='step-dot'>11</span>若 p 为空，则返回 -1。</div>
+              </div>
+            </div>
+          </div>
+          <div class='grid-3' style='margin-top:18px'><div class='card soft'><h3>找到时</h3><p>p != NULL，return index。</p></div><div class='card soft'><h3>没找到时</h3><p>p 走过所有结点到达 NULL，return -1。</p></div><div class='card soft'><h3>重复元素时</h3><p>遇到第一个匹配值立即停止，返回最小位置。</p></div></div>
+        </div>
+      </div>
+      <div class='pager'><button class='btn nav-step' data-prev='delete' type='button'>上一节</button><button class='btn primary nav-step' data-next='main' type='button'>下一节：main 串讲</button></div>
+    </section>
+
+    <section class='lesson-section' id='main' data-title='main 串讲'>
+      <div class='panel'>
+        <div class='section-head'><div class='eyebrow'>08 · 主函数</div><h2>main：只负责“按顺序调度”</h2><p>不要把 main 当成大段算法记。它的任务依次是：创建头结点、建表、打印、插入、删除、查找，并在操作成功时再次打印。</p></div>
+        <div class='section-body'>
+          <div class='grid-2'>
+            <div>
+              <div class='code-panel'><div class='code-head'><span class='dots'><i></i><i></i><i></i></span><span>main · 逻辑骨架</span></div><pre><span class='c-kw'>int</span> <span class='c-fn'>main</span>()
+{
+    <span class='c-type'>int</span> num;
+    <span class='c-fn'>scanf</span>(<span class='c-str'>"%d"</span>, &amp;num);
+
+    <span class='c-type'>LNode</span>* Head = (<span class='c-type'>LNode</span>*) <span class='c-fn'>malloc</span>(<span class='c-kw'>sizeof</span>(<span class='c-type'>LNode</span>));
+    <span class='c-fn'>createLinkList</span>(Head, num);
+    <span class='c-fn'>printLinkList</span>(Head);
+
+    <span class='c-fn'>scanf</span>(<span class='c-str'>"%d%d"</span>, &amp;insertIndex, &amp;insertVal);
+    <span class='c-kw'>if</span>(<span class='c-fn'>insertNode</span>(Head, insertVal, insertIndex))
+        <span class='c-fn'>printLinkList</span>(Head);
+
+    <span class='c-fn'>scanf</span>(<span class='c-str'>"%d"</span>, &amp;deleteIndex);
+    <span class='c-kw'>if</span>(<span class='c-fn'>deleteNode</span>(Head, deleteIndex))
+        <span class='c-fn'>printLinkList</span>(Head);
+
+    <span class='c-fn'>scanf</span>(<span class='c-str'>"%d"</span>, &amp;findVal);
+    <span class='c-type'>int</span> index = <span class='c-fn'>findNode</span>(Head, findVal);
+    <span class='c-kw'>if</span>(index == -1) <span class='c-fn'>printf</span>(<span class='c-str'>"未找到该元素\n"</span>);
+    <span class='c-kw'>else</span> <span class='c-fn'>printf</span>(<span class='c-str'>"位置为: %d\n"</span>, index);
+}</pre></div>
+              <div class='callout warn'><b>注意：</b>为使课堂代码更紧凑，这里的 scanf 合并展示了输入。上传原代码是分多次 printf/scanf 读取，<strong>输入顺序不变</strong>。</div>
+            </div>
+            <div>
+              <div class='card soft'><h3>用一组样例走完整流程</h3><div class='table-wrap'><table><thead><tr><th>输入</th><th>含义</th></tr></thead><tbody><tr><td class='mono'>3</td><td>建立 3 个结点</td></tr><tr><td class='mono'>10 20 30</td><td>尾插法建表</td></tr><tr><td class='mono'>2 99</td><td>在位置 2 插入 99</td></tr><tr><td class='mono'>3</td><td>删除位置 3</td></tr><tr><td class='mono'>99</td><td>查找 99</td></tr></tbody></table></div><div class='flow' style='margin-top:16px'><span>10 20 30</span><i>插入后</i><span>10 99 20 30</span><i>删除后</i><span>10 99 30</span><i>查找</i><span>位置 2</span></div><div class='callout good'>输出中会依次出现建表后的链表、插入后的链表、删除后的链表，以及查找结果。</div></div>
+              <div class='card' style='margin-top:14px'><h3>main 的调用依赖</h3><ul class='clean'><li>createLinkList 依赖已经 malloc 的 Head。</li><li>insertNode 和 deleteNode 内部会调用 getLinkLength。</li><li>insertNode、deleteNode 都返回 bool，main 用 if 决定是否打印。</li><li>findNode 返回 int，用 -1 表示未找到。</li></ul></div>
+            </div>
+          </div>
+          <div class='mainsim card' style='margin-top:18px'><h3>main 流程演示</h3><div class='trace-controls'><button class='btn primary' id='mainRun' type='button'>播放完整流程</button><button class='btn' id='mainReset' type='button'>重置</button><span id='mainState' class='small muted'>等待开始</span></div><div class='stage' style='margin-top:12px;min-height:170px'><div id='mainFlow' class='list-flow'></div><div class='caption-box' id='mainCaption'><span class='step-dot'>i</span>点击播放，观察五个函数如何接力。</div></div></div>
+        </div>
+      </div>
+      <div class='pager'><button class='btn nav-step' data-prev='find' type='button'>上一节</button><button class='btn primary nav-step' data-next='practice' type='button'>下一节：学生训练</button></div>
+    </section>    <section class='lesson-section' id='practice' data-title='学生编程训练'>
+      <div class='panel'>
+        <div class='section-head'><div class='eyebrow'>09 · 动手环节</div><h2>学生编程训练：只补关键代码，不抄整段</h2><p>下面五个任务按课堂顺序排列。输入会保存在本机浏览器中；检查器只检查关键结构，不能替代 C 编译器。</p></div>
+        <div class='section-body'>
+          <div class='task-grid'>
+            <article class='task-card'><h3>任务 1 · 定义结点</h3><p>补全结构体，使一个结点既能保存 int，也能指向同类型结点。</p><textarea id='task1' data-key='ll-task-1' placeholder='typedef struct ...'></textarea><div class='editor-tools'><button class='btn primary task-check' data-task='1' type='button'>检查关键结构</button><button class='btn task-answer' data-task='1' type='button'>参考代码</button><button class='btn task-clear' data-task='1' type='button'>清空</button><span class='result' id='taskResult1'></span></div><details id='answer1'><summary>查看提示与参考</summary><p>必须有 <span class='mono'>int data</span> 和 <span class='mono'>struct LNode* next</span>。</p><div class='code-panel'><pre>typedef struct LNode{
+    int data;
+    struct LNode* next;
+} LNode;</pre></div></details></article>
+            <article class='task-card'><h3>任务 2 · 求长度</h3><p>从首元结点开始遍历，统计有效结点个数。</p><textarea id='task2' data-key='ll-task-2' placeholder='int getLinkLength(LNode* L) { ... }'></textarea><div class='editor-tools'><button class='btn primary task-check' data-task='2' type='button'>检查关键结构</button><button class='btn task-answer' data-task='2' type='button'>参考代码</button><button class='btn task-clear' data-task='2' type='button'>清空</button><span class='result' id='taskResult2'></span></div><details id='answer2'><summary>查看提示与参考</summary><p>工作指针从 <span class='mono'>L-&gt;next</span> 开始，循环结束条件是 <span class='mono'>p != NULL</span>。</p><div class='code-panel'><pre>int getLinkLength(LNode* L){
+    LNode* p = L-&gt;next;
+    int cnt = 0;
+    while(p != NULL){
+        cnt++;
+        p = p-&gt;next;
+    }
+    return cnt;
+}</pre></div></details></article>
+            <article class='task-card'><h3>任务 3 · 插入连接</h3><p>只写出插入时最关键的连接语句，顺序不能错。</p><textarea id='task3' data-key='ll-task-3' placeholder='newNode->... = ...;' style='min-height:110px'></textarea><div class='editor-tools'><button class='btn primary task-check' data-task='3' type='button'>检查顺序</button><button class='btn task-answer' data-task='3' type='button'>参考代码</button><button class='btn task-clear' data-task='3' type='button'>清空</button><span class='result' id='taskResult3'></span></div><details id='answer3'><summary>查看提示与参考</summary><p>先让新结点接住后半段，再让前驱指向新结点。</p><div class='code-panel'><pre>newNode-&gt;next = p-&gt;next;
+p-&gt;next = newNode;</pre></div></details></article>
+            <article class='task-card'><h3>任务 4 · 删除结点</h3><p>补全保存、跨接和释放三步。</p><textarea id='task4' data-key='ll-task-4' placeholder='LNode* victim = ...;'></textarea><div class='editor-tools'><button class='btn primary task-check' data-task='4' type='button'>检查关键结构</button><button class='btn task-answer' data-task='4' type='button'>参考代码</button><button class='btn task-clear' data-task='4' type='button'>清空</button><span class='result' id='taskResult4'></span></div><details id='answer4'><summary>查看提示与参考</summary><p>victim 保存待删结点，p-&gt;next 跨接，free 释放。</p><div class='code-panel'><pre>LNode* victim = p-&gt;next;
+p-&gt;next = victim-&gt;next;
+free(victim);</pre></div></details></article>
+            <article class='task-card'><h3>任务 5 · 查找元素</h3><p>找到返回值的位置，找不到返回 -1。</p><textarea id='task5' data-key='ll-task-5' placeholder='int findNode(LNode* L, int val) { ... }'></textarea><div class='editor-tools'><button class='btn primary task-check' data-task='5' type='button'>检查关键结构</button><button class='btn task-answer' data-task='5' type='button'>参考代码</button><button class='btn task-clear' data-task='5' type='button'>清空</button><span class='result' id='taskResult5'></span></div><details id='answer5'><summary>查看提示与参考</summary><p>index 从 1 开始，循环后根据 p 是否为空返回 index 或 -1。</p><div class='code-panel'><pre>int findNode(LNode* L, int val){
+    LNode* p = L-&gt;next;
+    int index = 1;
+    while(p != NULL &amp;&amp; p-&gt;data != val){
+        index++;
+        p = p-&gt;next;
+    }
+    return p == NULL ? -1 : index;
+}</pre></div></details></article>
+            <article class='task-card'><h3>任务 6 · 口头答辩</h3><p>让学生不看代码回答：为什么插入函数的 p 从 Head 开始，而查找函数的 p 从 Head-&gt;next 开始？</p><textarea id='task6' data-key='ll-task-6' placeholder='写出你的解释...' style='min-height:110px'></textarea><div class='editor-tools'><button class='btn primary task-check' data-task='6' type='button'>检查关键词</button><button class='btn task-answer' data-task='6' type='button'>参考解释</button><button class='btn task-clear' data-task='6' type='button'>清空</button><span class='result' id='taskResult6'></span></div><details id='answer6'><summary>查看提示与参考</summary><p>插入需要修改前驱的 next；查找只需检查真实数据结点。</p></details></article>
+          </div>
+        </div>
+      </div>
+      <div class='pager'><button class='btn nav-step' data-prev='main' type='button'>上一节</button><button class='btn primary nav-step' data-next='lab' type='button'>下一节：综合实验台</button></div>
+    </section>    <section class='lesson-section' id='lab' data-title='综合操作实验台'>
+      <div class='panel'>
+        <div class='section-head'><div class='eyebrow'>10 · 综合操作实验台</div><h2>把六个函数连起来做一遍</h2><p>先用空格输入一组整数；切换尾插/前插并观察顺序变化；随后执行插入、删除、查找。实验台模拟上传代码的逻辑。</p></div>
+        <div class='section-body'>
+          <div class='lab-layout'>
+            <div class='card soft'>
+              <div class='control-grid'>
+                <div class='field'><label for='labValues'>输入数据（空格分隔）</label><input id='labValues' type='text' value='10 20 30'></div>
+                <div class='field'><label for='labMode'>建表方式</label><select id='labMode'><option value='tail'>尾插法（保持输入顺序）</option><option value='head'>前插法（反转输入顺序）</option></select></div>
+                <button class='btn primary' id='labBuild' type='button'>建立链表</button><hr style='border:0;border-top:1px solid #d7deea'>
+                <div class='field'><label for='labInsertIndex'>插入位置 index</label><input id='labInsertIndex' type='number' min='1' value='2'></div>
+                <div class='field'><label for='labInsertValue'>插入值 val</label><input id='labInsertValue' type='number' value='99'></div>
+                <button class='btn' id='labInsert' type='button'>执行 insertNode</button><hr style='border:0;border-top:1px solid #d7deea'>
+                <div class='field'><label for='labDeleteIndex'>删除位置 index</label><input id='labDeleteIndex' type='number' min='1' value='3'></div>
+                <button class='btn' id='labDelete' type='button'>执行 deleteNode</button><hr style='border:0;border-top:1px solid #d7deea'>
+                <div class='field'><label for='labFindValue'>查找值 val</label><input id='labFindValue' type='number' value='99'></div>
+                <button class='btn' id='labFind' type='button'>执行 findNode</button>
+              </div>
+            </div>
+            <div>
+              <div class='lab-list'><div style='display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:6px'><b style='color:#fff'>当前链表</b><span class='small' id='labLength' style='color:#93c5fd'>长度 0</span></div><div class='list-flow' id='labFlow'></div></div>
+              <div class='log' id='labLog'></div>
+              <div class='trace-controls'><button class='btn' id='labClearLog' type='button'>清空日志</button><button class='btn warn' id='labReset' type='button'>重置实验台</button></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class='pager'><button class='btn nav-step' data-prev='practice' type='button'>上一节</button><button class='btn primary nav-step' data-next='review' type='button'>下一节：课堂收束</button></div>
+    </section>
+
+    <section class='lesson-section' id='review' data-title='收束与易错清单'>
+      <div class='panel'>
+        <div class='section-head'><div class='eyebrow'>11 · 课堂收束</div><h2>最后一分钟：用“前驱、顺序、边界、释放”检查代码</h2><p>让学生不要靠记整段代码，而是用四个关键词检查自己的单链表程序。</p></div>
+        <div class='section-body'>
+          <div class='checklist'>
+            <div class='check-item'><strong>前驱</strong>插入、删除都要找到目标位置的前驱，因此 p 从 Head 开始。</div>
+            <div class='check-item'><strong>顺序</strong>插入先连 newNode-&gt;next，再改 p-&gt;next；否则会丢链。</div>
+            <div class='check-item'><strong>边界</strong>插入允许 1..len+1，删除只允许 1..len。</div>
+            <div class='check-item'><strong>释放</strong>删除要先保存待删结点，跨接后再 free。</div>
+            <div class='check-item'><strong>首元</strong>有效结点从 Head-&gt;next 开始，头结点不参与编号。</div>
+            <div class='check-item'><strong>遍历</strong>处理当前结点之后，再执行 p = p-&gt;next。</div>
+          </div>
+          <div class='grid-2' style='margin-top:20px'>
+            <div class='card soft'><h3>上传代码可以进一步改进的地方</h3><ul class='clean'><li>malloc 后检查是否返回 NULL。</li><li>建表前显式执行 <span class='mono'>L-&gt;next = NULL</span>，覆盖 n=0 的情况。</li><li>程序结束前释放所有结点和头结点。</li><li>输入位置失败后是否继续执行删除、查找，应按实验要求统一处理。</li></ul></div>
+            <div class='card'><h3>给学生的一句话</h3><div class='callout good'>先画出“p 在哪里”，再写下一行代码。能画出指针位置，链表就基本不会写错。</div><div class='callout'><b>下课前自测：</b>不看代码，分别说出求长度、插入、删除、查找四个循环的移动次数和结束条件。</div></div>
+          </div>
+          <div class='pager'><button class='btn nav-step' data-prev='lab' type='button'>上一节</button><button class='btn primary' id='backStart' type='button'>回到开场</button></div>
+        </div>
+      </div>
+      <div class='footer-note'>单链表交互式教学页 · 依据上传 main.c 的代码结构制作</div>
+    </section>
+  </main>
+</div><script>
+(function(){
+  'use strict';
+  var sections=Array.prototype.slice.call(document.querySelectorAll('.lesson-section'));
+  var navLinks=Array.prototype.slice.call(document.querySelectorAll('.nav-link'));
+  var progressBar=document.getElementById('progressBar');
+  var presentBtn=document.getElementById('presentBtn');
+  var helpBtn=document.getElementById('helpBtn');
+  var currentIndex=0;
+  var isPresenting=false;
+  function renderMiniList(target,values,activePos,removedPos){
+    var html='<span class="mini-node head">Head</span>';
+    if(values.length===0){html+='<span class="arrow">→</span><span class="mono">NULL</span>';}
+    else{
+      for(var i=0;i<values.length;i++){
+        html+='<span class="arrow">→</span>';
+        var classes='mini-node';
+        if(i===activePos){classes+=' active';}
+        if(i===removedPos){classes+=' gone';}
+        html+='<span class="'+classes+'">'+values[i]+'</span>';
+      }
+      html+='<span class="arrow">→</span><span class="mono">NULL</span>';
+    }
+    target.innerHTML=html;
+  }
+  function updateProgress(){
+    var pct=sections.length<=1?100:((currentIndex+1)/sections.length)*100;
+    progressBar.style.width=pct+'%';
+  }
+  function setActiveSection(index,shouldScroll){
+    index=Math.max(0,Math.min(sections.length-1,index));
+    currentIndex=index;
+    sections.forEach(function(sec,i){sec.classList.toggle('is-active',i===index);});
+    navLinks.forEach(function(link,i){link.classList.toggle('active',i===index);});
+    updateProgress();
+    if(shouldScroll){window.scrollTo({top:0,behavior:'smooth'});}
+  }
+  navLinks.forEach(function(link,i){
+    link.addEventListener('click',function(event){
+      if(isPresenting){event.preventDefault();setActiveSection(i,true);}
+      else{setActiveSection(i,false);}
+    });
+  });
+  document.querySelectorAll('.nav-step').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      var id=btn.getAttribute('data-next')||btn.getAttribute('data-prev');
+      if(!id){return;}
+      var idx=sections.findIndex(function(sec){return sec.id===id;});
+      if(idx>=0){
+        setActiveSection(idx,true);
+        if(!isPresenting){document.getElementById(id).scrollIntoView({behavior:'smooth',block:'start'});}
+      }
+    });
+  });
+  presentBtn.addEventListener('click',function(){
+    isPresenting=!isPresenting;
+    document.body.classList.toggle('present',isPresenting);
+    presentBtn.classList.toggle('active',isPresenting);
+    presentBtn.textContent=isPresenting?'退出演示':'演示模式';
+    setActiveSection(currentIndex,true);
+  });
+  helpBtn.addEventListener('click',function(){alert('演示模式快捷键：← 上一节，→ 下一节，Esc 退出演示。\n普通模式：可直接滚动，也可点击左侧目录跳转。');});
+  document.addEventListener('keydown',function(event){
+    if(!isPresenting){return;}
+    if(event.key==='ArrowRight'||event.key==='PageDown'||event.key===' '){event.preventDefault();setActiveSection(currentIndex+1,true);}
+    else if(event.key==='ArrowLeft'||event.key==='PageUp'){event.preventDefault();setActiveSection(currentIndex-1,true);}
+    else if(event.key==='Escape'){isPresenting=false;document.body.classList.remove('present');presentBtn.classList.remove('active');presentBtn.textContent='演示模式';setActiveSection(currentIndex,true);}
+  });
+  if('IntersectionObserver' in window){
+    var observer=new IntersectionObserver(function(entries){
+      if(isPresenting){return;}
+      entries.forEach(function(entry){
+        if(entry.isIntersecting){
+          var idx=sections.indexOf(entry.target);
+          if(idx>=0){currentIndex=idx;updateProgress();navLinks.forEach(function(link,i){link.classList.toggle('active',i===idx);});}
+        }
+      });
+    },{rootMargin:'-25% 0px -60% 0px',threshold:0});
+    sections.forEach(function(sec){observer.observe(sec);});
+  }
+  function initTrace(player){
+    var lines=Array.prototype.slice.call(player.querySelectorAll('[data-trace]'));
+    var stages=Array.prototype.slice.call(player.querySelectorAll('[data-stage]'));
+    var captions=Array.prototype.slice.call(player.querySelectorAll('[data-caption]'));
+    var prev=player.querySelector('[data-trace-prev]');
+    var next=player.querySelector('[data-trace-next]');
+    var reset=player.querySelector('[data-trace-reset]');
+    var count=player.querySelector('[data-trace-count]');
+    var index=0;
+    var total=Math.max(lines.length,stages.length,captions.length);
+    function render(){
+      lines.forEach(function(el,i){el.classList.toggle('active',i===index);});
+      stages.forEach(function(el,i){el.classList.toggle('active',i===index);});
+      captions.forEach(function(el,i){el.classList.toggle('active',i===index);});
+      if(count){count.textContent=(index+1)+' / '+total;}
+      if(prev){prev.disabled=index===0;}
+      if(next){next.disabled=index===total-1;}
+    }
+    if(prev){prev.addEventListener('click',function(){if(index>0){index--;render();}});}
+    if(next){next.addEventListener('click',function(){if(index<total-1){index++;render();}});}
+    if(reset){reset.addEventListener('click',function(){index=0;render();});}
+    render();
+  }
+  document.querySelectorAll('.trace-player').forEach(initTrace);
+  var nodeExplain=document.getElementById('nodeExplain');
+  var nodeMessages=[
+    '<span class="step-dot">i</span>结构体把“元素值”和“下一结点地址”打包在一起。',
+    '<span class="step-dot">d</span><b>data</b> 保存当前结点的数据；本例是 int。',
+    '<span class="step-dot">n</span><b>next</b> 保存下一个 LNode 的地址；末尾结点的 next 为 NULL。',
+    '<span class="step-dot">t</span><b>typedef</b> 给 struct LNode 取别名 LNode，后面可以少写 struct。'
+  ];
+  document.querySelectorAll('.node-focus').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      var i=Number(btn.getAttribute('data-focus'));
+      nodeExplain.innerHTML=nodeMessages[i];
+      document.querySelectorAll('[data-node-line]').forEach(function(line,j){line.classList.toggle('active',i===j);});
+    });
+  });
+  document.getElementById('lengthCheck').addEventListener('click',function(){
+    var v=document.getElementById('lengthQuiz').value.toLowerCase();
+    var r=document.getElementById('lengthResult');
+    var ok=(v.indexOf('null')>=0||v.indexOf('空')>=0)&&(v.indexOf('不进入')>=0||v.indexOf('跳过')>=0||v.indexOf('为0')>=0||v.indexOf('返回0')>=0);
+    r.className='result '+(ok?'ok':'no');
+    r.textContent=ok?'回答到位：空表首元指针为 NULL，循环不进入。':'再检查：从 Head->next 出发后，空表会发生什么？';
+  });
+  document.getElementById('createCheck').addEventListener('click',function(){
+    var v=document.getElementById('createQuiz').value.replace(/\s/g,'');
+    var r=document.getElementById('createResult');
+    var ok=v.indexOf('1')>=0&&v.indexOf('2')>=0&&v.indexOf('3')>=0&&(v.indexOf('1->2->3')>=0||v.indexOf('1→2→3')>=0);
+    r.className='result '+(ok?'ok':'no');
+    r.textContent=ok?'正确：尾插法保持 1 → 2 → 3。':'再看 createLinkList：新结点接在 tmp 后面，输入顺序会保留。';
+  });
+  var printValues=[10,20,30],printPos=-1,printTimer=null;
+  var printFlow=document.getElementById('printFlow'),printCaption=document.getElementById('printCaption');
+  function printRender(){
+    renderMiniList(printFlow,printValues,printPos);
+    if(printPos<0){printCaption.innerHTML='<span class="step-dot">i</span>p 从 Head-&gt;next 开始。';}
+    else if(printPos<printValues.length){printCaption.innerHTML='<span class="step-dot">'+(printPos+1)+'</span>访问 '+printValues[printPos]+'，输出后执行 p = p-&gt;next。';}
+    else{printCaption.innerHTML='<span class="step-dot">✓</span>p 到达 NULL，遍历结束。输出结果为 10 20 30。';}
+  }
+  function printAdvance(){if(printPos<printValues.length){printPos++;printRender();}else{clearInterval(printTimer);printTimer=null;}}
+  document.getElementById('printRun').addEventListener('click',function(){if(printTimer){clearInterval(printTimer);}printPos=-1;printRender();printAdvance();printTimer=setInterval(printAdvance,800);});
+  document.getElementById('printStep').addEventListener('click',printAdvance);
+  document.getElementById('printReset').addEventListener('click',function(){if(printTimer){clearInterval(printTimer);printTimer=null;}printPos=-1;printRender();});
+  printRender();
+  var mainValues=[10,20,30],mainFlow=document.getElementById('mainFlow'),mainCaption=document.getElementById('mainCaption'),mainState=document.getElementById('mainState');
+  var mainSteps=[
+    {values:[10,20,30],pos:-1,text:'① createLinkList：输入顺序为 10、20、30，尾插法保持顺序。'},
+    {values:[10,20,30],pos:0,text:'② printLinkList：从 10 开始逐个访问。'},
+    {values:[10,20,30],pos:1,text:'② printLinkList：输出 20。'},
+    {values:[10,20,30],pos:2,text:'② printLinkList：输出 30，随后遇到 NULL。'},
+    {values:[10,99,20,30],pos:1,text:'③ insertNode(99, 2)：p 停在 10，新结点 99 插在它后面。'},
+    {values:[10,99,20,30],pos:2,text:'④ printLinkList：插入后链表为 10 99 20 30。'},
+    {values:[10,99,30],pos:2,text:'⑤ deleteNode(3)：p 停在 99，跨接并释放 20。'},
+    {values:[10,99,30],pos:1,text:'⑥ printLinkList：删除后链表为 10 99 30。'},
+    {values:[10,99,30],pos:1,text:'⑦ findNode(99)：从首元结点开始比较，返回位置 2。'}
+  ];
+  var mainPos=-1,mainTimer=null;
+  function mainRender(){
+    if(mainPos<0){renderMiniList(mainFlow,mainValues,-1);mainCaption.innerHTML='<span class="step-dot">i</span>点击播放，观察五个函数如何接力。';mainState.textContent='等待开始';return;}
+    var st=mainSteps[mainPos];renderMiniList(mainFlow,st.values,st.pos);mainCaption.innerHTML='<span class="step-dot">'+(mainPos+1)+'</span>'+st.text;mainState.textContent='步骤 '+(mainPos+1)+' / '+mainSteps.length;
+  }
+  function mainAdvance(){if(mainPos<mainSteps.length-1){mainPos++;mainRender();}else{clearInterval(mainTimer);mainTimer=null;}}
+  document.getElementById('mainRun').addEventListener('click',function(){if(mainTimer){clearInterval(mainTimer);}mainPos=-1;mainRender();mainAdvance();mainTimer=setInterval(mainAdvance,1050);});
+  document.getElementById('mainReset').addEventListener('click',function(){if(mainTimer){clearInterval(mainTimer);mainTimer=null;}mainPos=-1;mainRender();});
+  mainRender();
+  var taskAnswers={
+    1:'typedef struct LNode{\n    int data;\n    struct LNode* next;\n} LNode;',
+    2:'int getLinkLength(LNode* L){\n    LNode* p = L->next;\n    int cnt = 0;\n    while(p != NULL){\n        cnt++;\n        p = p->next;\n    }\n    return cnt;\n}',
+    3:'newNode->next = p->next;\np->next = newNode;',
+    4:'LNode* victim = p->next;\np->next = victim->next;\nfree(victim);',
+    5:'int findNode(LNode* L, int val){\n    LNode* p = L->next;\n    int index = 1;\n    while(p != NULL && p->data != val){\n        index++;\n        p = p->next;\n    }\n    return p == NULL ? -1 : index;\n}',
+    6:'插入需要修改前驱结点的 next，所以 p 要从 Head 开始；查找只需要检查真实数据结点，所以 p 从 Head->next 开始。'
+  };
+  function compact(text){return text.replace(/\/\*[\s\S]*?\*\//g,'').replace(/\/\/.*$/gm,'').replace(/\s+/g,'').replace(/["']/g,'');}
+  function checkTask(id,text){
+    var s=compact(text);
+    if(id==='1'){return s.indexOf('typedefstructLNode')>=0&&s.indexOf('intdata')>=0&&s.indexOf('structLNode*next')>=0&&s.indexOf('}LNode')>=0;}
+    if(id==='2'){return s.indexOf('L->next')>=0&&s.indexOf('while(p!=NULL)')>=0&&s.indexOf('cnt++')>=0&&s.indexOf('p=p->next')>=0&&s.indexOf('returncnt')>=0;}
+    if(id==='3'){var a=s.indexOf('newNode->next=p->next'),b=s.indexOf('p->next=newNode');return a>=0&&b>=0&&a<b;}
+    if(id==='4'){return s.indexOf('victim=p->next')>=0&&s.indexOf('p->next=victim->next')>=0&&s.indexOf('free(victim)')>=0;}
+    if(id==='5'){return s.indexOf('p=L->next')>=0&&s.indexOf('while(p!=NULL&&p->data!=val)')>=0&&s.indexOf('returnp==NULL?-1:index')>=0;}
+    if(id==='6'){return (s.indexOf('前驱')>=0||s.indexOf('Head')>=0)&&(s.indexOf('数据结点')>=0||s.indexOf('Head->next')>=0||s.indexOf('检查')>=0);}
+    return false;
+  }
+  document.querySelectorAll('textarea[data-key]').forEach(function(area){
+    try{var saved=localStorage.getItem(area.getAttribute('data-key'));if(saved){area.value=saved;}}catch(e){}
+    area.addEventListener('input',function(){try{localStorage.setItem(area.getAttribute('data-key'),area.value);}catch(e){}});
+  });
+  document.querySelectorAll('.task-answer').forEach(function(btn){btn.addEventListener('click',function(){var id=btn.getAttribute('data-task'),area=document.getElementById('task'+id),d=document.getElementById('answer'+id);if(!area.value.trim()){area.value=taskAnswers[id];area.dispatchEvent(new Event('input'));}if(d){d.open=true;}});});
+  document.querySelectorAll('.task-clear').forEach(function(btn){btn.addEventListener('click',function(){var id=btn.getAttribute('data-task'),area=document.getElementById('task'+id);area.value='';area.dispatchEvent(new Event('input'));document.getElementById('taskResult'+id).textContent='';});});
+  document.querySelectorAll('.task-check').forEach(function(btn){btn.addEventListener('click',function(){var id=btn.getAttribute('data-task'),area=document.getElementById('task'+id),r=document.getElementById('taskResult'+id),ok=checkTask(id,area.value);r.className='result '+(ok?'ok':'no');r.textContent=ok?'关键结构通过':'还缺关键结构，对照提示检查';});});
+  var labList=[],labFlow=document.getElementById('labFlow'),labLog=document.getElementById('labLog');
+  function labWrite(msg,type){var div=document.createElement('div');div.className='log-line '+(type||'info');div.textContent=msg;labLog.appendChild(div);labLog.scrollTop=labLog.scrollHeight;}
+  function parseValues(text){return text.trim().split(/\s+/).map(function(x){return parseInt(x,10);}).filter(function(x){return !Number.isNaN(x);});}
+  function renderLabList(activePos,kind){
+    var html='<div class="node head"><div class="label">Head</div><div class="middle"><div class="data">—</div><div class="next">next</div></div></div>';
+    if(labList.length===0){html+='<span class="arrow">→</span><span class="null">NULL</span>';}
+    else{
+      for(var i=0;i<labList.length;i++){var cls='node';if(i===activePos){cls+=' '+(kind||'active');}html+='<span class="arrow">→</span><div class="'+cls+'"><div class="idx">位置 '+(i+1)+'</div><div class="label">LNode</div><div class="middle"><div class="data">'+labList[i]+'</div><div class="next">next</div></div></div>';}
+      html+='<span class="arrow">→</span><span class="null">NULL</span>';
+    }
+    labFlow.innerHTML=html;document.getElementById('labLength').textContent='长度 '+labList.length;
+  }
+  function labBuild(){
+    var vals=parseValues(document.getElementById('labValues').value),mode=document.getElementById('labMode').value;
+    labList=mode==='head'?vals.slice().reverse():vals.slice();renderLabList(-1);
+    labWrite((mode==='head'?'前插法':'尾插法')+'建表：['+labList.join(', ')+']','ok');
+  }
+  document.getElementById('labBuild').addEventListener('click',labBuild);
+  document.getElementById('labInsert').addEventListener('click',function(){
+    var idx=parseInt(document.getElementById('labInsertIndex').value,10),val=parseInt(document.getElementById('labInsertValue').value,10);
+    if(Number.isNaN(idx)||idx<1||idx>labList.length+1){renderLabList(-1,'danger');labWrite('插入位置不合法：合法范围是 1..'+(labList.length+1),'bad');return;}
+    labList.splice(idx-1,0,val);renderLabList(idx-1,'new');labWrite('插入 '+val+' 到位置 '+idx+'：['+labList.join(', ')+']','ok');
+  });
+  document.getElementById('labDelete').addEventListener('click',function(){
+    var idx=parseInt(document.getElementById('labDeleteIndex').value,10);
+    if(Number.isNaN(idx)||idx<1||idx>labList.length){renderLabList(-1,'danger');labWrite('删除位置不合法：合法范围是 1..'+labList.length,'bad');return;}
+    var removed=labList[idx-1];renderLabList(idx-1,'danger');labList.splice(idx-1,1);labWrite('删除位置 '+idx+' 的元素 '+removed+'：['+labList.join(', ')+']','ok');setTimeout(function(){renderLabList(-1);},450);
+  });
+  document.getElementById('labFind').addEventListener('click',function(){
+    var val=parseInt(document.getElementById('labFindValue').value,10),pos=labList.indexOf(val);
+    if(pos===-1){labWrite('查找 '+val+'：返回 -1，未找到该元素','bad');renderLabList(-1);}else{renderLabList(pos,'active');labWrite('查找 '+val+'：第一次出现在位置 '+(pos+1),'ok');}
+  });
+  document.getElementById('labClearLog').addEventListener('click',function(){labLog.innerHTML='';});
+  document.getElementById('labReset').addEventListener('click',function(){labList=[];labLog.innerHTML='';renderLabList(-1);labWrite('实验台已重置','info');});
+  document.getElementById('backStart').addEventListener('click',function(){setActiveSection(0,true);});
+  labBuild();
+  var initialId=window.location.hash.slice(1);
+  if(initialId){
+    var initialIdx=sections.findIndex(function(sec){return sec.id===initialId;});
+    if(initialIdx>=0){setActiveSection(initialIdx,false);setTimeout(function(){document.getElementById(initialId).scrollIntoView({behavior:'smooth',block:'start'});},0);}
+    else{setActiveSection(0,false);}
+  }else{setActiveSection(0,false);}
+})();
+</script>
+</body>
+</html>
